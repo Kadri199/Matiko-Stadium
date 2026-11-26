@@ -64,6 +64,16 @@ async function loadBookings(){
   const host=$("bookingsAdminList");
   const snap=await getDocs(collection(db,"bookings"));
   const docs=snap.docs.sort((a,b)=>(b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0));
+  // Repair the public schedule list from every booking already approved by the owner.
+  const approvedSlotKeys=[...new Set(docs
+    .filter(item=>item.data().status==="approved"&&item.data().day&&item.data().time)
+    .map(item=>`${item.data().day}|${item.data().time}`))];
+  if(approvedSlotKeys.length){
+    await setDoc(doc(db,"settings","schedule"),{
+      bookedSlots:arrayUnion(...approvedSlotKeys),
+      updatedAt:serverTimestamp()
+    },{merge:true});
+  }
   host.innerHTML="";
   if(!docs.length){host.innerHTML='<div class="empty-state">لا توجد طلبات حجز حتى الآن.</div>';return;}
   docs.forEach(item=>{
