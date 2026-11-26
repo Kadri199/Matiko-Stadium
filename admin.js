@@ -45,6 +45,32 @@ function renderRecords(target, docs, type) {
     }
     content.append(title,detail);
     const actions=document.createElement("div");actions.className="record-actions";
+    if(type==="results"){
+      const edit=document.createElement("button");
+      edit.className="edit-btn";
+      edit.textContent="تعديل المسجلين";
+      edit.addEventListener("click",async()=>{
+        const current1=(d.scorers1||[]).map(x=>x.name+(Number(x.goals)>0?" - "+x.goals:"")).join("\n");
+        const current2=(d.scorers2||[]).map(x=>x.name+(Number(x.goals)>0?" - "+x.goals:"")).join("\n");
+        const entered1=prompt("أدخل مسجلي "+(d.team1||"الفريق الأول")+"، لاعب في كل سطر (مثال: محمد - 2):",current1);
+        if(entered1===null)return;
+        const entered2=prompt("أدخل مسجلي "+(d.team2||"الفريق الثاني")+"، لاعب في كل سطر (مثال: أمين - 1):",current2);
+        if(entered2===null)return;
+        edit.disabled=true;
+        try{
+          await updateDoc(doc(db,"results",item.id),{
+            scorers1:parseScorers(entered1),
+            scorers2:parseScorers(entered2)
+          });
+          await loadAll();
+          message("resultMessage","تم تحديث أسماء المسجلين فقط دون تغيير النتيجة.");
+        }catch(error){
+          alert("تعذر تحديث أسماء المسجلين: "+error.message);
+          edit.disabled=false;
+        }
+      });
+      actions.append(edit);
+    }
     const del=document.createElement("button");del.className="danger-btn";del.textContent=type==="users"?"حذف الملف":type==="news"?"🗑 حذف الخبر":"🗑 حذف";
     del.addEventListener("click",async()=>{
       const warning=type==="users"?"سيُحذف ملف الفريق من Firestore فقط، ولن يُحذف حساب تسجيل الدخول. هل تريد المتابعة؟":"هل تريد حذف هذا المنشور نهائياً؟";
