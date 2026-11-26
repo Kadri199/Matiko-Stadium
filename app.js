@@ -6,7 +6,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import {
-  doc, getDoc, setDoc, serverTimestamp
+  doc, getDoc, setDoc, collection, addDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
@@ -148,13 +148,28 @@ $("authForm").addEventListener("submit", async e => {
   }
 });
 
-$("requestForm").addEventListener("submit", e => {
+$("requestForm").addEventListener("submit", async e => {
   e.preventDefault();
-  if (!currentUser) {
-    showMessage("requestMessage", "يجب تسجيل الدخول أولاً.");
-    return;
-  }
-  showMessage("requestMessage", "تم تجهيز النموذج. سنفعّل حفظ طلبات الحجز بعد إعداد صلاحيات قاعدة البيانات.", false);
+  const submit=e.submitter || e.target.querySelector('button[type="submit"],button:not([type])');
+  if (!currentUser) { showMessage("requestMessage", "يرجى تسجيل الدخول بحساب فريق أولاً."); return; }
+  if (isOwnerAccount(currentUser)) { showMessage("requestMessage", "طلبات الحجز متاحة لحسابات الفرق فقط."); return; }
+  if (!selectedSlot) { showMessage("requestMessage", "يرجى اختيار الفترة الزمنية أولاً."); return; }
+  if (submit) { submit.disabled=true; submit.textContent="جارٍ إرسال الطلب..."; }
+  try {
+    const profileSnap=await getDoc(doc(db,"users",currentUser.uid));
+    if(!profileSnap.exists() || profileSnap.data().role!=="team") throw new Error("يجب تسجيل الدخول بحساب فريق صالح.");
+    const teamName=profileSnap.data().fullName || $("teamOne").value.trim();
+    const opponent=$("teamTwo").value.trim();
+    if(!opponent) throw new Error("يرجى إدخال اسم الفريق المنافس.");
+    await addDoc(collection(db,"bookings"),{
+      teamUid:currentUser.uid,teamEmail:currentUser.email||"",teamName,
+      opponentName:opponent,day:selectedDay,time:selectedSlot,
+      note:$("requestNote").value.trim(),status:"pending",createdAt:serverTimestamp()
+    });
+    e.target.reset();
+    showMessage("requestMessage","تم إرسال طلب الحجز بنجاح. يبقى الطلب قيد الانتظار حتى موافقة إدارة الملعب.",false);
+  } catch(err) { showMessage("requestMessage","تعذر إرسال الطلب: "+err.message); }
+  finally { if(submit){submit.disabled=false;submit.textContent="إرسال الطلب";} }
 });
 
 onAuthStateChanged(auth, user => {
