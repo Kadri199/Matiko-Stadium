@@ -160,14 +160,75 @@ $("resultForm").addEventListener("submit",async e=>{
     e.target.reset();message("resultMessage","تم نشر النتيجة بنجاح.");await loadAll();
   }catch(err){message("resultMessage",err.message,true);}
 });
+const CLOUDINARY_CLOUD_NAME = "vigpliv3";
+const CLOUDINARY_UPLOAD_PRESET = "ml_default";
+let selectedNewsImage = null;
+let newsPreviewUrl = "";
+
+$("newsImageFile").addEventListener("change",()=>{
+  const file=$("newsImageFile").files?.[0]||null;
+  selectedNewsImage=file;
+  if(newsPreviewUrl)URL.revokeObjectURL(newsPreviewUrl);
+  newsPreviewUrl="";
+  if(!file){$("newsImagePreviewWrap").classList.add("hidden");return;}
+  if(!file.type.startsWith("image/")){
+    selectedNewsImage=null;$("newsImageFile").value="";
+    message("newsMessage","يرجى اختيار ملف صورة صالح.",true);return;
+  }
+  newsPreviewUrl=URL.createObjectURL(file);
+  $("newsImagePreview").src=newsPreviewUrl;
+  $("newsImagePreviewWrap").classList.remove("hidden");
+  message("newsMessage","تم اختيار الصورة. ستُرفع عند نشر الخبر.");
+});
+$("clearNewsImage").addEventListener("click",()=>{
+  selectedNewsImage=null;$("newsImageFile").value="";
+  $("newsImagePreview").removeAttribute("src");
+  $("newsImagePreviewWrap").classList.add("hidden");
+  if(newsPreviewUrl)URL.revokeObjectURL(newsPreviewUrl);
+  newsPreviewUrl="";
+});
+async function prepareNewsImage(file){
+  const bitmap=await createImageBitmap(file);
+  const maxSide=1600,scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
+  const canvas=document.createElement("canvas");
+  canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);
+  const ctx=canvas.getContext("2d");
+  ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
+  const blob=await new Promise((resolve,reject)=>canvas.toBlob(result=>result?resolve(result):reject(new Error("تعذر تجهيز الصورة.")),"image/jpeg",0.82));
+  return new File([blob],(file.name.replace(/\.[^.]+$/,"")||"news-photo")+".jpg",{type:"image/jpeg"});
+}
+async function uploadNewsImage(file){
+  const image=await prepareNewsImage(file);
+  const form=new FormData();
+  form.append("file",image);
+  form.append("upload_preset",CLOUDINARY_UPLOAD_PRESET);
+  const response=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,{method:"POST",body:form});
+  const data=await response.json();
+  if(!response.ok||!data.secure_url)throw new Error(data.error?.message||"تعذر رفع الصورة إلى Cloudinary.");
+  return data.secure_url;
+}
 $("newsForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!ownerReady)return;
+  const submit=e.submitter||e.target.querySelector('button[type="submit"],button:not([type])');
+  if(submit)submit.disabled=true;
   try{
-    const imageUrl=$("newsImage").value.trim();
-    if(imageUrl&&!/^https:\/\//i.test(imageUrl))throw new Error("يجب أن يبدأ رابط الصورة بـ https://");
-    await addDoc(collection(db,"news"),{title:$("newsTitle").value.trim(),body:$("newsBody").value.trim(),imageUrl,createdAt:serverTimestamp()});
-    e.target.reset();message("newsMessage","تم نشر الخبر بنجاح.");await loadAll();
+    let imageUrl="";
+    if(selectedNewsImage){
+      message("newsMessage","جارٍ رفع الصورة...");
+      imageUrl=await uploadNewsImage(selectedNewsImage);
+    }
+    await addDoc(collection(db,"news"),{
+      title:$("newsTitle").value.trim(),body:$("newsBody").value.trim(),
+      imageUrl,createdAt:serverTimestamp()
+    });
+    e.target.reset();selectedNewsImage=null;
+    $("newsImagePreviewWrap").classList.add("hidden");
+    $("newsImagePreview").removeAttribute("src");
+    if(newsPreviewUrl)URL.revokeObjectURL(newsPreviewUrl);newsPreviewUrl="";
+    message("newsMessage","تم نشر الخبر بنجاح.");
+    await loadAll();
   }catch(err){message("newsMessage",err.message,true);}
+  finally{if(submit)submit.disabled=false;}
 });
 $("aboutForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!ownerReady)return;
