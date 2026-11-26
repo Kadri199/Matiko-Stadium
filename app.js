@@ -107,9 +107,18 @@ $("authForm").addEventListener("submit", async e => {
       await signOut(auth);
     } else {
       const credential = await signInWithEmailAndPassword(auth, email, password);
-      if (authMode === "owner" && !isOwnerAccount(credential.user)) {
-        await signOut(auth);
-        throw new Error("هذا الحساب ليس حساب صاحب الملعب.");
+      if (authMode === "owner") {
+        if (credential.user.email?.toLowerCase() !== OWNER_EMAIL) {
+          await signOut(auth);
+          throw new Error("This is not the stadium owner's email account.");
+        }
+        if (credential.user.uid !== OWNER_UID) {
+          const actualUid = credential.user.uid;
+          await signOut(auth);
+          throw new Error("Owner account UID does not match the configured owner UID. Actual UID: " + actualUid + ". Please send me this UID.");
+        }
+        location.href = "admin.html";
+        return;
       }
       if (authMode !== "owner" && isOwnerAccount(credential.user)) {
         await signOut(auth);
@@ -147,9 +156,12 @@ $("requestForm").addEventListener("submit", e => {
 onAuthStateChanged(auth, user => {
   currentUser = user;
   document.body.classList.toggle("owner-signed-in", isOwnerAccount(user));
-  if (isOwnerAccount(user) && !location.pathname.endsWith("/admin.html")) {
+  if (user?.email?.toLowerCase() === OWNER_EMAIL && user.uid === OWNER_UID && !location.pathname.endsWith("/admin.html")) {
     location.href = "admin.html";
     return;
+  }
+  if (user?.email?.toLowerCase() === OWNER_EMAIL && user.uid !== OWNER_UID) {
+    showMessage("formMessage", "Owner UID mismatch. Current UID: " + user.uid + ". Send this UID so I can update the owner configuration.");
   }
   $("loginOpen").textContent = user ? "تسجيل الخروج" : "تسجيل الدخول";
   $("loginOpen").onclick = user ? async () => { await signOut(auth); } : () => openAuth("login");
