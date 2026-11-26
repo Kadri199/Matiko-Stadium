@@ -255,17 +255,13 @@ function renderHomepageResults(snapshot) {
     const scorers = document.createElement("div");
     scorers.className = "scorers";
     const side1 = document.createElement("div");
-    const label1 = document.createElement("b");
-    label1.textContent = "مسجلو " + (item.team1 || "الفريق الأول");
     const names1 = document.createElement("p");
     names1.textContent = formatScorers(item.scorers1);
-    side1.append(label1, names1);
+    side1.append(names1);
     const side2 = document.createElement("div");
-    const label2 = document.createElement("b");
-    label2.textContent = "مسجلو " + (item.team2 || "الفريق الثاني");
     const names2 = document.createElement("p");
     names2.textContent = formatScorers(item.scorers2);
-    side2.append(label2, names2);
+    side2.append(names2);
     scorers.append(side1, side2);
     card.append(date, scoreRow, scorers);
 
