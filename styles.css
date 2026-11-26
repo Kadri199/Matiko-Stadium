@@ -23,3 +23,6 @@
 .owner-header-btn{border:1px solid #ffffff65;background:#ffffff12;color:#e5f4eb;border-radius:10px;padding:8px 11px;font-family:inherit;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;transition:.2s}
 .owner-header-btn:hover{background:var(--lime);border-color:var(--lime);color:var(--forest)}
 @media(max-width:760px){.nav-wrap{gap:8px}.header-actions{gap:5px}.owner-header-btn{padding:7px 8px;font-size:10px}.header-actions .btn-light{padding:7px 9px;font-size:10px}}
+
+/* Approved match details popup */
+.match-info-modal{text-align:center;padding:38px 24px 24px}.match-team{font-size:clamp(20px,5vw,27px);font-weight:900;color:var(--forest);line-height:1.5;overflow-wrap:anywhere}.match-vs{font-size:17px;font-weight:900;letter-spacing:2px;color:var(--green2);margin:8px 0}.match-info-time{margin:18px 0 0!important;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.slot.booked-slot{cursor:pointer}.slot.booked-slot:hover{border-color:#16845d;transform:translateY(-2px)}
