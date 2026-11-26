@@ -17,7 +17,7 @@
     <a class="brand" href="#home"><span class="brand-mark">⚽</span><span><strong>ملعب أولاد مبارك</strong><small>الملعب الجواري</small></span></a>
     <button class="menu-toggle" id="menuToggle" aria-label="فتح القائمة">☰</button>
     <nav id="mainNav">
-      <a href="#schedule">الحجوزات</a><a href="#challenges">التحديات</a><a href="#results">النتائج</a><a href="#news">الأخبار</a><a href="#about">عن الملعب</a>
+      <a href="#results">نتائج المباريات</a><a href="#schedule">احجز موعداً</a><a href="#challenges">تحدى الجميع</a><a href="#news">الأخبار</a><a href="#about">عن الملعب</a>
     </nav>
     <div class="header-actions">
       <button type="button" class="owner-header-btn" id="ownerLogin">دخول الإدارة</button>
@@ -33,19 +33,23 @@
       <span class="eyebrow">مرحباً بكم في ملعبنا</span>
       <h1>الملعب الجواري<br><em>أولاد مبارك</em></h1>
       <p>مكان المنافسة، الروح الرياضية، وصناعة أجمل اللحظات.</p>
-      <div class="hero-actions"><a class="btn btn-lime" href="#schedule">احجز موعداً</a><a class="btn btn-outline" href="#challenges">اكتشف التحديات</a></div>
+      <div class="hero-actions"><a class="btn btn-lime" href="#results">نتائج المباريات</a><a class="btn btn-outline" href="#schedule">احجز موعداً</a><a class="btn btn-outline" href="#challenges">تحدى الجميع</a></div>
       <div class="hero-note"><span class="live-dot"></span> المواعيد اليومية من 16:00 إلى 22:00</div>
     </div>
     <div class="hero-ball">⚽</div>
   </section>
 
-  <section class="section" id="challenges">
+
+
+
+
+
+
+
+  <section class="section" id="results">
     <div class="container">
-      <div class="section-heading"><div><span class="eyebrow green">التحدي يبدأ هنا</span><h2>تحديات مفتوحة</h2><p>ابحث عن فريق يواجه فريقك أو انشر تحدياً جديداً.</p></div><button class="btn btn-primary" id="publishChallenge">＋ نشر تحدي</button></div>
-      <div class="cards-grid" id="challengeList">
-        <article class="challenge-card"><div class="card-top"><span class="tag">تحدٍ مفتوح</span><span class="muted">مثال توضيحي</span></div><h3>نسور أولاد مبارك</h3><div class="match-meta"><span>📅 السبت</span><span>🕕 18:00</span></div><p>نبحث عن فريق قوي لمباراة حماسية.</p><button class="btn btn-outline-dark" disabled>قبول التحدي</button></article>
-        <article class="empty-card"><span>🏆</span><h3>التحدي القادم قد يكون تحديك!</h3><p>سجّل الدخول وانشر تحدياً لفريقك.</p></article>
-      </div>
+      <div class="section-heading"><div><span class="eyebrow green">حصيلة المنافسة</span><h2>نتائج المباريات</h2><p>آخر النتائج المنشورة في الملعب.</p></div></div>
+      <div class="results-grid" id="resultsList"><article class="result-card"><div class="result-date">ستظهر النتائج هنا</div><div class="score-row"><strong>الفريق الأول</strong><b>— : —</b><strong>الفريق الثاني</strong></div><div class="scorers"><div><b>مسجلو الفريق الأول</b><p>لم تُنشر نتائج بعد</p></div><div><b>مسجلو الفريق الثاني</b><p>لم تُنشر نتائج بعد</p></div></div></article></div>
     </div>
   </section>
 
@@ -59,13 +63,15 @@
     </div>
   </section>
 
-  <section class="section" id="results">
+  <section class="section" id="challenges">
     <div class="container">
-      <div class="section-heading"><div><span class="eyebrow green">حصيلة المنافسة</span><h2>نتائج المباريات</h2><p>آخر النتائج المنشورة في الملعب.</p></div></div>
-      <div class="results-grid" id="resultsList"><article class="result-card"><div class="result-date">ستظهر النتائج هنا</div><div class="score-row"><strong>الفريق الأول</strong><b>— : —</b><strong>الفريق الثاني</strong></div><div class="scorers"><div><b>مسجلو الفريق الأول</b><p>لم تُنشر نتائج بعد</p></div><div><b>مسجلو الفريق الثاني</b><p>لم تُنشر نتائج بعد</p></div></div></article></div>
+      <div class="section-heading"><div><span class="eyebrow green">التحدي يبدأ هنا</span><h2>تحدى الجميع</h2><p>ابحث عن فريق يواجه فريقك أو انشر تحدياً جديداً.</p></div><button class="btn btn-primary" id="publishChallenge">＋ نشر تحدي</button></div>
+      <div class="cards-grid" id="challengeList">
+        <article class="challenge-card"><div class="card-top"><span class="tag">تحدٍ مفتوح</span><span class="muted">مثال توضيحي</span></div><h3>نسور أولاد مبارك</h3><div class="match-meta"><span>📅 السبت</span><span>🕕 18:00</span></div><p>نبحث عن فريق قوي لمباراة حماسية.</p><button class="btn btn-outline-dark" disabled>قبول التحدي</button></article>
+        <article class="empty-card"><span>🏆</span><h3>التحدي القادم قد يكون تحديك!</h3><p>سجّل الدخول وانشر تحدياً لفريقك.</p></article>
+      </div>
     </div>
   </section>
-
 
   <section class="section about-section" id="about">
     <div class="container about-grid"><div><span class="eyebrow green">من نحن</span><h2>عن الملعب</h2><p id="aboutDescriptionHome">الملعب الجواري أولاد مبارك فضاء رياضي يجمع محبي كرة القدم في أجواء من التنافس والاحترام والروح الرياضية.</p><div id="aboutContactHome" class="about-contact hidden"></div><div class="about-points"><span>✓ تنظيم المواعيد</span><span>✓ تحديات بين الفرق</span><span>✓ نتائج وأخبار المباريات</span></div></div><div class="about-visual"><div class="pitch-lines"></div><span>⚽</span><b>نلعب بروح الفريق</b></div></div>
