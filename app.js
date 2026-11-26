@@ -95,6 +95,58 @@ function renderHomepageChallenges(snapshot) {
   });
 }
 
+
+function renderHomepageNews(snapshot) {
+  const host = $("newsList");
+  host.innerHTML = "";
+  const items = snapshot.docs
+    .map(item => ({ id: item.id, ...item.data() }))
+    .sort((a, b) => {
+      const ta = a.createdAt?.seconds || 0;
+      const tb = b.createdAt?.seconds || 0;
+      return tb - ta;
+    });
+
+  if (!items.length) {
+    host.innerHTML = '<article class="news-placeholder"><span>📰</span><h3>لا توجد أخبار حالياً</h3><p>ستظهر هنا أخبار وإعلانات إدارة الملعب عند نشرها.</p></article>';
+    return;
+  }
+
+  items.forEach(item => {
+    const card = document.createElement("article");
+    card.className = "news-card";
+    if (item.imageUrl) {
+      const img = document.createElement("img");
+      img.className = "news-image";
+      img.src = item.imageUrl;
+      img.alt = item.title || "صورة الخبر";
+      img.loading = "lazy";
+      card.appendChild(img);
+    }
+    const content = document.createElement("div");
+    content.className = "news-content";
+    const title = document.createElement("h3");
+    title.textContent = item.title || "خبر من إدارة الملعب";
+    const body = document.createElement("p");
+    body.textContent = item.body || "";
+    content.append(title, body);
+    if (item.createdAt?.toDate) {
+      const date = document.createElement("time");
+      date.className = "news-date";
+      date.dateTime = item.createdAt.toDate().toISOString();
+      date.textContent = item.createdAt.toDate().toLocaleDateString("ar-DZ");
+      content.appendChild(date);
+    }
+    card.appendChild(content);
+    host.appendChild(card);
+  });
+}
+
+onSnapshot(collection(db, "news"), renderHomepageNews, error => {
+  console.error("Could not load homepage news:", error);
+  $("newsList").innerHTML = '<article class="news-placeholder"><span>📰</span><h3>تعذر تحميل الأخبار</h3><p>يرجى تحديث الصفحة لاحقاً.</p></article>';
+});
+
 onSnapshot(query(collection(db, "challenges"), where("status", "==", "open")), renderHomepageChallenges, error => {
   console.error("Could not load homepage challenges:", error);
   $("challengeList").innerHTML = '<article class="empty-card"><h3>تعذر تحميل التحديات</h3><p>يرجى تحديث الصفحة لاحقاً.</p></article>';
