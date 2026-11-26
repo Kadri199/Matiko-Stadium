@@ -29,8 +29,17 @@ daySelect.addEventListener("change", () => {
 });
 let approvedMatches = new Map();
 function normalizeMatchKey(day, time){
-  const cleanDay=String(day||"").trim().replace(/\s+/g,"");
-  const cleanTime=String(time||"").trim().replace(/[–—−]/g,"-").replace(/\s+/g,"");
+  const normalizeArabic = value => String(value||"")
+    .normalize("NFKC")
+    .replace(/[\u064B-\u065F\u0670ـ]/g,"")
+    .replace(/[أإآٱ]/g,"ا")
+    .replace(/ى/g,"ي")
+    .replace(/[٠-٩]/g,d=>String("٠١٢٣٤٥٦٧٨٩".indexOf(d)))
+    .replace(/[۰-۹]/g,d=>String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
+    .replace(/\s+/g,"")
+    .trim();
+  const cleanDay=normalizeArabic(day);
+  const cleanTime=normalizeArabic(time).replace(/[–—−]/g,"-");
   return cleanDay+"|"+cleanTime;
 }
 let matchInfoBackdrop = null;
