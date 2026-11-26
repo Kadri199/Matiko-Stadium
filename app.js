@@ -314,7 +314,15 @@ function renderHomepageResults(snapshot) {
       const cleanName = normalizeClubName(name);
       const club = knownClubCrests.find(entry => entry.names.some(alias => normalizeClubName(alias) === cleanName));
       const country = knownNationalTeams.find(entry => entry.names.some(alias => normalizeClubName(alias) === cleanName));
-      if (club) {
+      if (item[side === "home" ? "crest1" : "crest2"]) {
+        const chosenCrest = document.createElement("img");
+        chosenCrest.className = "broadcast-crest-img";
+        chosenCrest.src = item[side === "home" ? "crest1" : "crest2"];
+        chosenCrest.alt = "شعار " + name;
+        chosenCrest.loading = "lazy";
+        chosenCrest.onerror = () => { chosenCrest.replaceWith(makeFallbackCrest(name)); };
+        team.appendChild(chosenCrest);
+      } else if (club) {
         const crest = document.createElement("img");
         crest.className = "broadcast-crest-img";
         crest.src = club.url;
