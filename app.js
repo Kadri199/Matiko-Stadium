@@ -204,6 +204,77 @@ function renderHomepageNews(snapshot) {
   });
 }
 
+function renderHomepageResults(snapshot) {
+  const host = $("resultsList");
+  host.innerHTML = "";
+  const items = snapshot.docs
+    .map(item => ({ id: item.id, ...item.data() }))
+    .sort((a, b) => {
+      const ta = a.createdAt?.seconds || (a.date ? Date.parse(a.date) / 1000 : 0);
+      const tb = b.createdAt?.seconds || (b.date ? Date.parse(b.date) / 1000 : 0);
+      return tb - ta;
+    });
+
+  if (!items.length) {
+    host.innerHTML = '<article class="result-card"><div class="result-date">لا توجد نتائج منشورة بعد</div><div class="score-row"><strong>ننتظر المباراة القادمة</strong></div></article>';
+    return;
+  }
+
+  const formatScorers = scorers => {
+    if (!Array.isArray(scorers) || !scorers.length) return "—";
+    return scorers.map(player => {
+      const name = String(player.name || "").trim();
+      const goals = Number(player.goals || 0);
+      return name ? (goals > 0 ? name + " (" + goals + ")" : name) : "";
+    }).filter(Boolean).join("، ") || "—";
+  };
+
+  items.forEach(item => {
+    const card = document.createElement("article");
+    card.className = "result-card";
+    const date = document.createElement("div");
+    date.className = "result-date";
+    if (item.date) {
+      const parsed = new Date(item.date + "T00:00:00");
+      date.textContent = Number.isNaN(parsed.getTime()) ? item.date : parsed.toLocaleDateString("ar-DZ");
+    } else {
+      date.textContent = "نتيجة مباراة";
+    }
+    const scoreRow = document.createElement("div");
+    scoreRow.className = "score-row";
+    const team1 = document.createElement("strong");
+    team1.textContent = item.team1 || "الفريق الأول";
+    const score = document.createElement("b");
+    score.textContent = String(item.score1 ?? "—") + " : " + String(item.score2 ?? "—");
+    const team2 = document.createElement("strong");
+    team2.textContent = item.team2 || "الفريق الثاني";
+    scoreRow.append(team1, score, team2);
+
+    const scorers = document.createElement("div");
+    scorers.className = "scorers";
+    const side1 = document.createElement("div");
+    const label1 = document.createElement("b");
+    label1.textContent = "مسجلو " + (item.team1 || "الفريق الأول");
+    const names1 = document.createElement("p");
+    names1.textContent = formatScorers(item.scorers1);
+    side1.append(label1, names1);
+    const side2 = document.createElement("div");
+    const label2 = document.createElement("b");
+    label2.textContent = "مسجلو " + (item.team2 || "الفريق الثاني");
+    const names2 = document.createElement("p");
+    names2.textContent = formatScorers(item.scorers2);
+    side2.append(label2, names2);
+    scorers.append(side1, side2);
+    card.append(date, scoreRow, scorers);
+    host.appendChild(card);
+  });
+}
+
+onSnapshot(collection(db, "results"), renderHomepageResults, error => {
+  console.error("Could not load homepage results:", error);
+  $("resultsList").innerHTML = '<article class="result-card"><div class="result-date">تعذر تحميل النتائج</div><p>يرجى تحديث الصفحة لاحقاً.</p></article>';
+});
+
 onSnapshot(collection(db, "news"), renderHomepageNews, error => {
   console.error("Could not load homepage news:", error);
   $("newsList").innerHTML = '<article class="news-placeholder"><span>📰</span><h3>تعذر تحميل الأخبار</h3><p>يرجى تحديث الصفحة لاحقاً.</p></article>';
