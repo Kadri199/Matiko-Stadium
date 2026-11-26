@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#082f26"><title>Matiko Games Arena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="games.css">
+</head><body class="single-game-page"><main class="single-game-wrap">
+<a class="back-to-stadium" href="index.html#games">← العودة إلى الملعب</a>
+<header class="single-game-heading"><span class="single-game-kicker">MATIKO GAMES ARENA</span><h1>العارضة العنيدة</h1><p>تحدَّ نفسك ونافس أفضل لاعبي الملعب!</p></header>
+<section class="single-game-panel">
+<div class="single-game-emblem">🥅</div>
+<h2>العارضة العنيدة</h2>
+<p class="single-game-intro">5 محاولات — أوقف مؤشر القوة داخل المنطقة الذهبية.</p>
+<div class="game-main single-game-main">
+<div class="game-scoreline"><span>الإصابات: <strong id="crossbarSCORE">0</strong></span><span>المحاولات <b id="crossbarROUND">0 / 5</b></span></div>
+<p class="game-status" id="crossbarSTATUS" aria-live="polite">اضغط ابدأ التحدي عندما تكون مستعداً.</p>
+crossbarCONTROLS
+<div class="game-actions single-game-actions"><button class="game-action primary" id="crossbarSTART">ابدأ التحدي</button></div>
+<div class="game-register hidden" id="crossbarRegister"><label for="crossbarName">اسمك لتسجيل النتيجة</label><input class="game-name-input" id="crossbarName" maxlength="24" placeholder="اكتب اسمك هنا"><button class="game-action primary" id="crossbarSave">سجّل نتيجتي</button></div>
+</div>
+<div class="single-game-leaderboard"><div class="game-leaderboard-title"><strong>🏆 أفضل 10 لاعبين</strong><span>TOP 10</span></div><ol class="game-top-list" id="crossbarTop"></ol><p class="game-footnote">🥇🥈🥉 للمراكز الثلاثة الأولى</p></div>
+</section></main><script type="module" src="games.js"></script></body></html>
