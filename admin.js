@@ -42,7 +42,7 @@ function renderRecords(target, docs, type) {
     }
     content.append(title,detail);
     const actions=document.createElement("div");actions.className="record-actions";
-    const del=document.createElement("button");del.className="danger-btn";del.textContent=type==="users"?"حذف الملف":"حذف";
+    const del=document.createElement("button");del.className="danger-btn";del.textContent=type==="users"?"حذف الملف":type==="news"?"🗑 حذف الخبر":"🗑 حذف";
     del.addEventListener("click",async()=>{
       const warning=type==="users"?"سيُحذف ملف الفريق من Firestore فقط، ولن يُحذف حساب تسجيل الدخول. هل تريد المتابعة؟":"هل تريد حذف هذا المنشور نهائياً؟";
       if(!confirm(warning))return;
