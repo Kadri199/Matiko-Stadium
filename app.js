@@ -13,6 +13,8 @@ const $ = (id) => document.getElementById(id);
 $("year").textContent = new Date().getFullYear();
 
 const OWNER_EMAIL = "afterdark706@gmail.com";
+const OWNER_UID = "hU0pqkyVYMYhBQ5GBAPHcHemph23";
+const isOwnerAccount = (user) => !!user && user.uid === OWNER_UID && user.email?.toLowerCase() === OWNER_EMAIL;
 const times = ["16:00 – 17:00","17:00 – 18:00","18:00 – 19:00","19:00 – 20:00","20:00 – 21:00","21:00 – 22:00"];
 const slotsGrid = $("slotsGrid");
 let selectedSlot = "";
@@ -105,11 +107,11 @@ $("authForm").addEventListener("submit", async e => {
       await signOut(auth);
     } else {
       const credential = await signInWithEmailAndPassword(auth, email, password);
-      if (authMode === "owner" && credential.user.email?.toLowerCase() !== OWNER_EMAIL) {
+      if (authMode === "owner" && !isOwnerAccount(credential.user)) {
         await signOut(auth);
         throw new Error("هذا الحساب ليس حساب صاحب الملعب.");
       }
-      if (authMode !== "owner" && credential.user.email?.toLowerCase() === OWNER_EMAIL) {
+      if (authMode !== "owner" && isOwnerAccount(credential.user)) {
         await signOut(auth);
         throw new Error("يرجى استخدام زر دخول الإدارة لهذا الحساب.");
       }
@@ -144,6 +146,7 @@ $("requestForm").addEventListener("submit", e => {
 
 onAuthStateChanged(auth, user => {
   currentUser = user;
+  document.body.classList.toggle("owner-signed-in", isOwnerAccount(user));
   $("loginOpen").textContent = user ? "تسجيل الخروج" : "تسجيل الدخول";
   $("loginOpen").onclick = user ? async () => { await signOut(auth); } : () => openAuth("login");
   if (user) {
