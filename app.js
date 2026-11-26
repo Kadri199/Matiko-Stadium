@@ -275,8 +275,8 @@ function renderHomepageResults(snapshot) {
       { names:["ajax","أياكس","اياكس"], url:"https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg" }
     ];
     const normalizeClubName = value => String(value || "").toLowerCase().normalize("NFKD")
-      .replace(/[\\u064B-\\u065F\\u0670ـ]/g,"").replace(/[أإآٱ]/g,"ا")
-      .replace(/[^a-z0-9\\u0600-\\u06ff]/g,"");
+      .replace(/[\u064B-\u065F\u0670ـ]/g,"").replace(/[أإآٱ]/g,"ا")
+      .replace(/[^a-z0-9\u0600-\u06ff]/g,"");
     const makeTeam = (name, side) => {
       const team = document.createElement("div");
       team.className = "broadcast-team broadcast-team-" + side;
