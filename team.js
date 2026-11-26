@@ -70,7 +70,7 @@ async function loadChallenges(){
       getDocs(query(collection(db,"challenges"),where("teamUid","==",currentUser.uid))),
       getDocs(query(collection(db,"challenges"),where("acceptedByUid","==",currentUser.uid)))
     ]);
-    const openItems=openSnap.docs.filter(d=>d.data().teamUid!==currentUser.uid);
+    const openItems=openSnap.docs;
     const ownItems=[...ownSnap.docs,...acceptedSnap.docs.filter(d=>!ownSnap.docs.some(o=>o.id===d.id))];
     renderList("openChallenges",openItems,false);
     renderList("myChallenges",ownItems,true);
