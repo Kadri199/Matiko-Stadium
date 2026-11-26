@@ -81,6 +81,15 @@ function openScorersEditor(team1, team2, current1, current2) {
   });
 }
 const availableClubCrests = [["Real Madrid","https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"],["Barcelona","https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg"],["Manchester United","https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg"],["Liverpool","https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg"],["Manchester City","https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg"],["Arsenal","https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg"],["Chelsea","https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg"],["Tottenham","https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg"],["Bayern Munich","https://upload.wikimedia.org/wikipedia/en/1/1f/FC_Bayern_München_logo_%282017%29.svg"],["Borussia Dortmund","https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg"],["Paris Saint-Germain","https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg"],["Juventus","https://upload.wikimedia.org/wikipedia/commons/1/15/Juventus_FC_2017_logo.svg"],["Inter Milan","https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg"],["AC Milan","https://upload.wikimedia.org/wikipedia/commons/d/d0/Logo_of_AC_Milan.svg"],["Atletico Madrid","https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg"],["Ajax","https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg"]];
+function setResultTimeOptions(times, selected="") {
+  const select=$("resultTime");
+  if(!select)return;
+  const choices=(Array.isArray(times)&&times.length?times:timesDefault).map(value=>String(value).trim()).filter(Boolean);
+  const previous=selected||select.value;
+  select.innerHTML="";
+  choices.forEach(time=>{const option=document.createElement("option");option.value=time;option.textContent=time;select.appendChild(option);});
+  select.value=choices.includes(previous)?previous:(choices[0]||"");
+}
 function fillCrestSelect(select, selectedUrl="") {
   if(!select) return;
   select.innerHTML="";
@@ -141,7 +150,7 @@ function renderRecords(target, docs, type) {
     const detail=document.createElement("p");
     if(type==="results"){
       title.textContent=`${d.team1||"الفريق الأول"} ${d.score1??"—"} : ${d.score2??"—"} ${d.team2||"الفريق الثاني"}`;
-      detail.textContent=`مسجلو ${d.team1}: ${(d.scorers1||[]).map(x=>x.name+" ("+x.goals+")").join("، ")||"—"}\nمسجلو ${d.team2}: ${(d.scorers2||[]).map(x=>x.name+" ("+x.goals+")").join("، ")||"—"}`;
+      detail.textContent=`الوقت: ${d.time||"—"}\nمسجلو ${d.team1}: ${(d.scorers1||[]).map(x=>x.name+" ("+x.goals+")").join("، ")||"—"}\nمسجلو ${d.team2}: ${(d.scorers2||[]).map(x=>x.name+" ("+x.goals+")").join("، ")||"—"}`;
     } else if(type==="news"){
       title.textContent=d.title||"خبر";
       detail.textContent=d.body||"";
@@ -259,9 +268,14 @@ async function loadAll(){
     await loadBookings();
     const sched=await getDoc(doc(db,"settings","schedule"));
     if(sched.exists()){
-      $("scheduleTimes").value=(sched.data().times||timesDefault).join("\n");
+      const configuredTimes=sched.data().times||timesDefault;
+      $("scheduleTimes").value=configuredTimes.join("\n");
       $("scheduleEnabled").checked=sched.data().enabled!==false;
-    }else $("scheduleTimes").value=timesDefault.join("\n");
+      setResultTimeOptions(configuredTimes);
+    }else {
+      $("scheduleTimes").value=timesDefault.join("\n");
+      setResultTimeOptions(timesDefault);
+    }
     const about=await getDoc(doc(db,"settings","about"));
     if(about.exists()){
       $("aboutDescription").value=about.data().description||"";
@@ -281,6 +295,7 @@ $("scheduleForm").addEventListener("submit",async e=>{
     const times=$("scheduleTimes").value.split("\n").map(x=>x.trim()).filter(Boolean);
     if(!times.length)throw new Error("أدخل فترة واحدة على الأقل.");
     await setDoc(doc(db,"settings","schedule"),{times,enabled:$("scheduleEnabled").checked,updatedAt:serverTimestamp()},{merge:true});
+    setResultTimeOptions(times);
     message("scheduleMessage","تم حفظ جدول المواعيد.");
   }catch(err){message("scheduleMessage",err.message,true);}
 });
@@ -290,7 +305,7 @@ $("resultForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!ownerReady)return;
   try{
     await addDoc(collection(db,"results"),{
-      date:$("matchDate").value,team1:$("resultTeam1").value.trim(),score1:Number($("score1").value),
+      date:$("matchDate").value,time:$("resultTime").value,team1:$("resultTeam1").value.trim(),score1:Number($("score1").value),
       team2:$("resultTeam2").value.trim(),score2:Number($("score2").value),
       crest1:$("resultCrest1").value,crest2:$("resultCrest2").value,
       scorers1:parseScorers($("scorers1").value),scorers2:parseScorers($("scorers2").value),
