@@ -27,6 +27,23 @@ daySelect.addEventListener("change", () => {
   renderSlots();
 });
 let bookedSlots = new Set();
+let approvedMatches = new Map();
+let matchInfoBackdrop = null;
+function showApprovedMatch(match){
+  if(!matchInfoBackdrop){
+    matchInfoBackdrop=document.createElement("div");
+    matchInfoBackdrop.className="modal-backdrop";
+    matchInfoBackdrop.id="approvedMatchBackdrop";
+    matchInfoBackdrop.innerHTML='<section class="modal match-info-modal" role="dialog" aria-modal="true" aria-label="تفاصيل المباراة"><button type="button" class="modal-close" aria-label="إغلاق">×</button><div class="match-team match-team-home"></div><div class="match-vs">VS</div><div class="match-team match-team-away"></div><p class="match-info-time"></p></section>';
+    document.body.appendChild(matchInfoBackdrop);
+    matchInfoBackdrop.querySelector(".modal-close").addEventListener("click",()=>matchInfoBackdrop.classList.remove("open"));
+    matchInfoBackdrop.addEventListener("click",e=>{if(e.target===matchInfoBackdrop)matchInfoBackdrop.classList.remove("open");});
+  }
+  matchInfoBackdrop.querySelector(".match-team-home").textContent=match.teamName||"الفريق الأول";
+  matchInfoBackdrop.querySelector(".match-team-away").textContent=match.opponentName||"الفريق الثاني";
+  matchInfoBackdrop.querySelector(".match-info-time").textContent=(match.day||"")+" — "+(match.time||"");
+  matchInfoBackdrop.classList.add("open");
+}
 let authMode = "login";
 let currentUser = null;
 
@@ -42,9 +59,12 @@ function renderSlots(){
     const button = document.createElement("button");
     const isBooked = bookedSlots.has(`${selectedDay}|${time}`);
     button.className = isBooked ? "slot booked-slot" : "slot";
-    button.innerHTML = `${time}<small>${isBooked ? "محجوز — تمت الموافقة" : "متاح — اضغط لطلب الحجز"}</small>`;
-    button.disabled = isBooked;
-    if (!isBooked) button.addEventListener("click", () => {
+    const match = approvedMatches.get(`${selectedDay}|${time}`);
+    button.innerHTML = `${time}<small>${isBooked ? (match ? "اضغط لعرض المباراة" : "محجوز — تمت الموافقة") : "متاح — اضغط لطلب الحجز"}</small>`;
+    if (isBooked) {
+      button.addEventListener("click", () => { if(match) showApprovedMatch(match); });
+      button.setAttribute("aria-label",match ? `مباراة ${match.teamName} ضد ${match.opponentName}` : "موعد محجوز");
+    } else button.addEventListener("click", () => {
       selectedSlot = time;
       $("requestTitle").textContent = "طلب حجز — " + selectedDay + " — " + time;
       $("requestMessage").textContent = currentUser ? "" : "يرجى تسجيل الدخول أولاً لإرسال طلب الحجز.";
@@ -59,6 +79,15 @@ onSnapshot(doc(db, "settings", "schedule"), snapshot => {
   bookedSlots = new Set(snapshot.exists() ? (snapshot.data().bookedSlots || []) : []);
   renderSlots();
 }, error => console.error("Could not load approved booking slots:", error));
+
+onSnapshot(query(collection(db, "bookings"), where("status", "==", "approved")), snapshot => {
+  approvedMatches = new Map();
+  snapshot.docs.forEach(item => {
+    const match = item.data();
+    if (match.day && match.time) approvedMatches.set(`${match.day}|${match.time}`, match);
+  });
+  renderSlots();
+}, error => console.error("Could not load approved match details:", error));
 
 function renderHomepageChallenges(snapshot) {
   const host = $("challengeList");
