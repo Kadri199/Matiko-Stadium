@@ -321,7 +321,7 @@ function renderHomepageResults(snapshot) {
         crest.alt = "شعار " + name;
         crest.loading = "lazy";
         crest.referrerPolicy = "no-referrer";
-        crest.onerror = () => { crest.replaceWith(makeFallbackCrest()); };
+        crest.onerror = () => { crest.replaceWith(makeFallbackCrest(name)); };
         team.appendChild(crest);
       } else if (country) {
         const flag = document.createElement("img");
@@ -329,21 +329,43 @@ function renderHomepageResults(snapshot) {
         flag.src = "https://flagcdn.com/" + country.code + ".svg";
         flag.alt = "علم " + name;
         flag.loading = "lazy";
-        flag.onerror = () => { flag.replaceWith(makeFallbackCrest()); };
+        flag.onerror = () => { flag.replaceWith(makeFallbackCrest(name)); };
         team.appendChild(flag);
       } else {
-        team.appendChild(makeFallbackCrest());
+        team.appendChild(makeFallbackCrest(name));
       }
       const label = document.createElement("strong");
       label.textContent = name || (side === "home" ? "الفريق الأول" : "الفريق الثاني");
       team.appendChild(label);
       return team;
     };
-    const makeFallbackCrest = () => {
+    const fallbackClubCrests = [
+      { name:"Real Madrid", url:"https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg" },
+      { name:"Barcelona", url:"https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg" },
+      { name:"Manchester United", url:"https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg" },
+      { name:"Liverpool", url:"https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg" },
+      { name:"Manchester City", url:"https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg" },
+      { name:"Arsenal", url:"https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg" },
+      { name:"Chelsea", url:"https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg" },
+      { name:"Tottenham", url:"https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg" },
+      { name:"Bayern Munich", url:"https://upload.wikimedia.org/wikipedia/en/1/1f/FC_Bayern_München_logo_%282017%29.svg" },
+      { name:"Borussia Dortmund", url:"https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg" },
+      { name:"Paris Saint-Germain", url:"https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg" },
+      { name:"Juventus", url:"https://upload.wikimedia.org/wikipedia/commons/1/15/Juventus_FC_2017_logo.svg" },
+      { name:"Inter Milan", url:"https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg" },
+      { name:"AC Milan", url:"https://upload.wikimedia.org/wikipedia/commons/d/d0/Logo_of_AC_Milan.svg" },
+      { name:"Atletico Madrid", url:"https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg" },
+      { name:"Ajax", url:"https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg" }
+    ];
+    const makeFallbackCrest = (teamName) => {
+      const name = normalizeClubName(teamName);
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+      const selected = fallbackClubCrests[hash % fallbackClubCrests.length];
       const crest = document.createElement("img");
       crest.className = "broadcast-crest-img";
-      crest.src = "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg";
-      crest.alt = "شعار نادٍ معروف";
+      crest.src = selected.url;
+      crest.alt = "شعار " + selected.name;
       crest.loading = "lazy";
       crest.referrerPolicy = "no-referrer";
       return crest;
