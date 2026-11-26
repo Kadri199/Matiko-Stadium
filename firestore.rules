@@ -42,6 +42,29 @@ service cloud.firestore {
       allow write: if isOwner();
     }
 
+    // Booking requests are created by authenticated team accounts.
+    match /bookings/{bookingId} {
+      function isTeam() {
+        return signedIn()
+          && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "team";
+      }
+      allow create: if isTeam()
+        && request.resource.data.teamUid == request.auth.uid
+        && request.resource.data.teamEmail == request.auth.token.email
+        && request.resource.data.teamName is string
+        && request.resource.data.opponentName is string
+        && request.resource.data.day is string
+        && request.resource.data.time is string
+        && request.resource.data.status == "pending"
+        && request.resource.data.keys().hasOnly([
+          "teamUid", "teamEmail", "teamName", "opponentName",
+          "day", "time", "note", "status", "createdAt"
+        ]);
+      allow read: if isOwner() || (signedIn() && resource.data.teamUid == request.auth.uid);
+      allow update, delete: if isOwner();
+    }
+
     // Team challenges: public teams can see open challenges, while each
     // participant can also see the challenges they created or accepted.
     match /challenges/{challengeId} {
