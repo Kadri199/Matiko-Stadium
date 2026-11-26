@@ -28,3 +28,7 @@
 .match-info-modal{text-align:center;padding:38px 24px 24px}.match-team{font-size:clamp(20px,5vw,27px);font-weight:900;color:var(--forest);line-height:1.5;overflow-wrap:anywhere}.match-vs{font-size:17px;font-weight:900;letter-spacing:2px;color:var(--green2);margin:8px 0}.match-info-time{margin:18px 0 0!important;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}.slot.booked-slot{cursor:pointer}.slot.booked-slot:hover{border-color:#16845d;transform:translateY(-2px)}
 
 .booking-sync-status{margin:10px 0 0;font-size:11px;color:#678273;text-align:center}.booking-sync-status.sync-error{color:#a52f28;font-weight:800}
+
+
+/* Homepage result deletion is shown only to the authenticated owner. */
+.result-delete-btn{display:block;margin:18px 0 0 auto;border:1px solid #efc3bf;border-radius:10px;background:#fff5f4;color:#a52f28;padding:7px 13px;font:700 12px "Cairo",sans-serif;cursor:pointer;transition:.2s}.result-delete-btn:hover{background:#ffe4e1;border-color:#e9a29b}.result-delete-btn:disabled{opacity:.65;cursor:wait}
