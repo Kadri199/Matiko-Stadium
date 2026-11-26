@@ -1,7 +1,7 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import {
-  collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, updateDoc, serverTimestamp
+  collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, updateDoc, serverTimestamp, arrayUnion
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const OWNER_UID = "hU0pqkyVYMYhBQ5GBAPHcHemph23";
@@ -85,6 +85,12 @@ async function loadBookings(){
               const conflict=allBookings.docs.some(x=>x.id!==item.id&&x.data().day===d.day&&x.data().time===d.time&&x.data().status==="approved");
               if(conflict) throw new Error("هذا الموعد محجوز بالفعل. اختر طلباً آخر.");
             }
+            if(status==="approved"){
+              await setDoc(doc(db,"settings","schedule"),{
+                bookedSlots:arrayUnion(`${d.day}|${d.time}`),
+                updatedAt:serverTimestamp()
+              },{merge:true});
+            }
             await updateDoc(doc(db,"bookings",item.id),{status,reviewedAt:serverTimestamp()});
             await loadBookings();
           }catch(e){alert("تعذر تحديث الطلب: "+e.message);btn.disabled=false;}
@@ -128,7 +134,7 @@ $("scheduleForm").addEventListener("submit",async e=>{
   try{
     const times=$("scheduleTimes").value.split("\n").map(x=>x.trim()).filter(Boolean);
     if(!times.length)throw new Error("أدخل فترة واحدة على الأقل.");
-    await setDoc(doc(db,"settings","schedule"),{times,enabled:$("scheduleEnabled").checked,updatedAt:serverTimestamp()});
+    await setDoc(doc(db,"settings","schedule"),{times,enabled:$("scheduleEnabled").checked,updatedAt:serverTimestamp()},{merge:true});
     message("scheduleMessage","تم حفظ جدول المواعيد.");
   }catch(err){message("scheduleMessage",err.message,true);}
 });
