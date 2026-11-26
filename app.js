@@ -18,7 +18,14 @@ const isOwnerAccount = (user) => !!user && user.uid === OWNER_UID && user.email?
 const times = ["16:00 – 17:00","17:00 – 18:00","18:00 – 19:00","19:00 – 20:00","20:00 – 21:00","21:00 – 22:00"];
 const slotsGrid = $("slotsGrid");
 let selectedSlot = "";
-let selectedDay = $("daySelect").value;
+const arabicWeekdays = ["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+const daySelect = $("daySelect");
+daySelect.value = arabicWeekdays[new Date().getDay()];
+let selectedDay = daySelect.value;
+daySelect.addEventListener("change", () => {
+  selectedDay = daySelect.value;
+  renderSlots();
+});
 let bookedSlots = new Set();
 let authMode = "login";
 let currentUser = null;
