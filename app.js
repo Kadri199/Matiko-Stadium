@@ -159,6 +159,7 @@ $("requestForm").addEventListener("submit", async e => {
     const profileSnap=await getDoc(doc(db,"users",currentUser.uid));
     if(!profileSnap.exists() || profileSnap.data().role!=="team") throw new Error("يجب تسجيل الدخول بحساب فريق صالح.");
     const teamName=profileSnap.data().fullName || $("teamOne").value.trim();
+    $("teamOne").value=teamName;
     const opponent=$("teamTwo").value.trim();
     if(!opponent) throw new Error("يرجى إدخال اسم الفريق المنافس.");
     await addDoc(collection(db,"bookings"),{
