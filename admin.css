@@ -6,3 +6,8 @@
 .form-card .hint{font-size:11px;color:var(--muted)}
 
 .edit-btn{border:1px solid #c8dfd0;color:#14613c;background:#f1faf4;border-radius:8px;padding:5px 10px;cursor:pointer;font-size:11px}.edit-btn:hover{background:#e1f3e7}.edit-btn:disabled{opacity:.6;cursor:wait}
+
+/* Keep all result actions on a single horizontal row, including on phones. */
+.record-actions{display:flex;flex-flow:row nowrap;align-items:center;gap:5px;white-space:nowrap}
+.record-actions button{white-space:nowrap;flex:1 1 0;min-width:0;padding:5px 5px;font-size:10px}
+@media(max-width:560px){.record-actions{width:100%;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden}.record-actions button{flex:1 1 0;min-width:max-content;padding:5px 6px;font-size:10px}}
