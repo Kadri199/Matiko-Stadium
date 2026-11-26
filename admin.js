@@ -1,7 +1,7 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import {
-  collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, serverTimestamp
+  collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, updateDoc, serverTimestamp, query, where
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const OWNER_UID = "hU0pqkyVYMYhBQ5GBAPHcHemph23";
@@ -60,6 +60,40 @@ async function loadCollection(name,target,type=name){
   renderRecords(target,docs,type);
   return docs.length;
 }
+async function loadBookings(){
+  const host=$("bookingsAdminList");
+  const snap=await getDocs(collection(db,"bookings"));
+  const docs=snap.docs.sort((a,b)=>(b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0));
+  host.innerHTML="";
+  if(!docs.length){host.innerHTML='<div class="empty-state">لا توجد طلبات حجز حتى الآن.</div>';return;}
+  docs.forEach(item=>{
+    const d=item.data(),card=document.createElement("article");card.className="record";
+    const content=document.createElement("div"),title=document.createElement("h3"),detail=document.createElement("p");
+    title.textContent=(d.teamName||"فريق")+" × "+(d.opponentName||"فريق منافس");
+    const statusText=d.status==="approved"?"تمت الموافقة":d.status==="rejected"?"مرفوض":"قيد الانتظار";
+    detail.textContent="اليوم: "+d.day+" | الساعة: "+d.time+" | الحالة: "+statusText+(d.note?" | ملاحظة: "+d.note:"")+" | البريد: "+(d.teamEmail||"");
+    content.append(title,detail);card.append(content);
+    const actions=document.createElement("div");actions.className="record-actions";
+    if(d.status==="pending"){
+      for(const [status,label] of [["approved","موافقة"],["rejected","رفض"]]){
+        const btn=document.createElement("button");btn.className=status==="approved"?"btn btn-primary":"danger-btn";btn.textContent=label;
+        btn.addEventListener("click",async()=>{
+          btn.disabled=true;
+          try{
+            if(status==="approved"){
+              const conflict=await getDocs(query(collection(db,"bookings"),where("day","==",d.day),where("time","==",d.time),where("status","==","approved")));
+              if(!conflict.empty) throw new Error("هذا الموعد محجوز بالفعل. اختر طلباً آخر.");
+            }
+            await updateDoc(doc(db,"bookings",item.id),{status,reviewedAt:serverTimestamp()});
+            await loadBookings();
+          }catch(e){alert("تعذر تحديث الطلب: "+e.message);btn.disabled=false;}
+        });
+        actions.append(btn);
+      }
+    }
+    card.append(actions);host.append(card);
+  });
+}
 async function loadAll(){
   if(!ownerReady)return;
   try{
@@ -69,6 +103,7 @@ async function loadAll(){
       loadCollection("news","newsAdminList","news")
     ]);
     $("userCount").textContent=users;$("resultCount").textContent=results;$("newsCount").textContent=news;
+    await loadBookings();
     const sched=await getDoc(doc(db,"settings","schedule"));
     if(sched.exists()){
       $("scheduleTimes").value=(sched.data().times||timesDefault).join("\n");
