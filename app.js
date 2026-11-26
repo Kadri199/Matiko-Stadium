@@ -320,7 +320,13 @@ function openAuth(mode){
   $("modalBackdrop").classList.add("open");
 }
 $("loginOpen").addEventListener("click", () => openAuth("login"));
-$("ownerLogin").addEventListener("click", () => {\n  if (isOwnerAccount(currentUser)) {\n    location.href = "admin.html";\n    return;\n  }\n  openAuth("owner");\n});
+$("ownerLogin").addEventListener("click", () => {
+  if (isOwnerAccount(currentUser)) {
+    location.href = "admin.html";
+    return;
+  }
+  openAuth("owner");
+});
 $("publishChallenge").addEventListener("click", () => {
   if (currentUser && !isOwnerAccount(currentUser)) {
     location.href = "team.html";
