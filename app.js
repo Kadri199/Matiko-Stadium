@@ -6,7 +6,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import {
-  doc, getDoc, setDoc, collection, addDoc, serverTimestamp, onSnapshot, query, where
+  doc, getDoc, setDoc, collection, addDoc, deleteDoc, serverTimestamp, onSnapshot, query, where
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
@@ -204,7 +204,9 @@ function renderHomepageNews(snapshot) {
   });
 }
 
+let latestResultsSnapshot = null;
 function renderHomepageResults(snapshot) {
+  latestResultsSnapshot = snapshot;
   const host = $("resultsList");
   host.innerHTML = "";
   const items = snapshot.docs
@@ -266,6 +268,27 @@ function renderHomepageResults(snapshot) {
     side2.append(label2, names2);
     scorers.append(side1, side2);
     card.append(date, scoreRow, scorers);
+
+    if (isOwnerAccount(currentUser)) {
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "result-delete-btn";
+      remove.textContent = "🗑 حذف النتيجة";
+      remove.addEventListener("click", async () => {
+        const label = (item.team1 || "الفريق الأول") + " ضد " + (item.team2 || "الفريق الثاني");
+        if (!confirm("هل تريد حذف نتيجة مباراة " + label + " نهائياً؟")) return;
+        remove.disabled = true;
+        remove.textContent = "جارٍ الحذف...";
+        try {
+          await deleteDoc(doc(db, "results", item.id));
+        } catch (error) {
+          alert("تعذر حذف النتيجة: " + error.message);
+          remove.disabled = false;
+          remove.textContent = "🗑 حذف النتيجة";
+        }
+      });
+      card.appendChild(remove);
+    }
     host.appendChild(card);
   });
 }
@@ -431,6 +454,7 @@ $("teamLogout").addEventListener("click", async () => {
 onAuthStateChanged(auth, async user => {
   currentUser = user;
   document.body.classList.toggle("owner-signed-in", isOwnerAccount(user));
+  if (latestResultsSnapshot) renderHomepageResults(latestResultsSnapshot);
   const teamHeader = $("teamHeaderAccount");
   teamHeader.classList.add("hidden");
   $("loginOpen").classList.remove("hidden");
