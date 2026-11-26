@@ -28,6 +28,8 @@ daySelect.addEventListener("change", () => {
   renderSlots();
 });
 let approvedMatches = new Map();
+const bookingSyncStatus = $("bookingSyncStatus");
+function setBookingSyncStatus(message, isError=false){ if(bookingSyncStatus){ bookingSyncStatus.textContent=message; bookingSyncStatus.classList.toggle("sync-error",isError); } }
 function normalizeMatchKey(day, time){
   const normalizeArabic = value => String(value||"")
     .normalize("NFKC")
@@ -73,7 +75,7 @@ function renderSlots(){
     const button = document.createElement("button");
     const key = normalizeMatchKey(selectedDay,time);
     const match = approvedMatches.get(key);
-    const isBooked = !!match;
+    const isBooked = Boolean(match && match.status === "approved");
     button.className = isBooked ? "slot booked-slot" : "slot";
     button.innerHTML = `${time}<small>${isBooked ? (match ? "اضغط لعرض المباراة" : "محجوز — تمت الموافقة") : "متاح — اضغط لطلب الحجز"}</small>`;
     if (isBooked) {
@@ -107,7 +109,11 @@ onSnapshot(query(collection(db, "bookings"), where("status", "==", "approved")),
     if (match.day && match.time) approvedMatches.set(normalizeMatchKey(match.day,match.time), match);
   });
   renderSlots();
-}, error => console.error("Could not load approved match details:", error));
+  setBookingSyncStatus(approvedMatches.size ? `المواعيد المؤكدة: ${approvedMatches.size}` : "لا توجد مواعيد مؤكدة حالياً.");
+}, error => {
+  console.error("Could not load approved match details:", error);
+  setBookingSyncStatus("تعذر تحميل الحجوزات المؤكدة. تحقق من صلاحيات قراءة الحجوزات في Firestore.", true);
+});
 
 function renderHomepageChallenges(snapshot) {
   const host = $("challengeList");
