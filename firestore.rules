@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return signedIn()
+        && request.auth.uid == "hU0pqkyVYMYhBQ5GBAPHcHemph23"
+        && request.auth.token.email == "afterdark706@gmail.com";
+    }
+
+    // Each team can read its own profile and create only a team profile.
+    // Only the owner can inspect or manage all user profiles.
+    match /users/{userId} {
+      allow get: if isOwner() || (signedIn() && request.auth.uid == userId);
+      allow list: if isOwner();
+      allow create: if isOwner() || (
+        signedIn()
+        && request.auth.uid == userId
+        && request.resource.data.role == "team"
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.keys().hasOnly(["fullName", "email", "role", "createdAt"])
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() > 1
+      );
+      allow update, delete: if isOwner();
+    }
+
+    // Publicly readable site content; only the owner can publish or edit it.
+    match /news/{document=**} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+    match /results/{document=**} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+    match /settings/{document=**} {
+      allow read: if true;
+      allow write: if isOwner();
+    }
+
+    // Everything else remains closed until its data model and permissions
+    // are implemented deliberately.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
