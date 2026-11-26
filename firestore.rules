@@ -42,6 +42,45 @@ service cloud.firestore {
       allow write: if isOwner();
     }
 
+    // Team challenges: public teams can see open challenges, while each
+    // participant can also see the challenges they created or accepted.
+    match /challenges/{challengeId} {
+      function isTeam() {
+        return signedIn()
+          && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "team";
+      }
+      allow read: if isOwner() || (signedIn() && (
+        resource.data.status == "open"
+        || resource.data.teamUid == request.auth.uid
+        || resource.data.acceptedByUid == request.auth.uid
+      ));
+      allow create: if isTeam()
+        && request.resource.data.teamUid == request.auth.uid
+        && request.resource.data.teamName is string
+        && request.resource.data.day is string
+        && request.resource.data.time is string
+        && request.resource.data.note is string
+        && request.resource.data.status == "open"
+        && request.resource.data.keys().hasOnly([
+          "teamUid", "teamName", "day", "time", "note", "status", "createdAt"
+        ]);
+      allow update: if isOwner() || (
+        isTeam()
+        && resource.data.status == "open"
+        && resource.data.teamUid != request.auth.uid
+        && request.resource.data.status == "accepted"
+        && request.resource.data.acceptedByUid == request.auth.uid
+        && request.resource.data.acceptedByName is string
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status", "acceptedByUid", "acceptedByName", "acceptedAt"
+        ])
+      );
+      allow delete: if isOwner() || (
+        isTeam() && resource.data.teamUid == request.auth.uid
+      );
+    }
+
     // Everything else remains closed until its data model and permissions
     // are implemented deliberately.
     match /{document=**} {
