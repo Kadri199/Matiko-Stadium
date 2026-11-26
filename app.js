@@ -6,7 +6,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import {
-  doc, setDoc, serverTimestamp
+  doc, getDoc, setDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
@@ -125,17 +125,13 @@ $("authForm").addEventListener("submit", async e => {
         await signOut(auth);
         throw new Error("يرجى استخدام زر دخول الإدارة لهذا الحساب.");
       }
-      const teamProfile = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js").then(({getDoc}) => getDoc(doc(db, "users", credential.user.uid)));
+      const teamProfile = await getDoc(doc(db, "users", credential.user.uid));
       if (!teamProfile.exists() || teamProfile.data().role !== "team") {
         await signOut(auth);
         throw new Error("لم يتم العثور على ملف فريق صالح لهذا الحساب. يرجى التواصل مع إدارة الملعب.");
       }
       location.href = "team.html";
       return;
-      $("modalBackdrop").classList.remove("open");
-      $("loginOpen").textContent = "تسجيل الخروج";
-      $("loginOpen").onclick = async () => { await signOut(auth); };
-      showMessage("formMessage", "تم تسجيل الدخول بنجاح.", false);
     }
   } catch (error) {
     const messages = {
@@ -170,6 +166,10 @@ onAuthStateChanged(auth, user => {
   }
   if (user?.email?.toLowerCase() === OWNER_EMAIL && user.uid !== OWNER_UID) {
     showMessage("formMessage", "Owner UID mismatch. Current UID: " + user.uid + ". Send this UID so I can update the owner configuration.");
+  }
+  if (user && !isOwnerAccount(user) && !location.pathname.endsWith("/team.html")) {
+    location.href = "team.html";
+    return;
   }
   $("loginOpen").textContent = user ? "تسجيل الخروج" : "تسجيل الدخول";
   $("loginOpen").onclick = user ? async () => { await signOut(auth); } : () => openAuth("login");
