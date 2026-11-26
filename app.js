@@ -57,9 +57,10 @@ function renderSlots(){
   slotsGrid.innerHTML = "";
   times.forEach((time) => {
     const button = document.createElement("button");
-    const isBooked = bookedSlots.has(`${selectedDay}|${time}`);
+    const key = String(selectedDay || "").trim() + "|" + String(time || "").trim();
+    const match = approvedMatches.get(key);
+    const isBooked = bookedSlots.has(key) || !!match;
     button.className = isBooked ? "slot booked-slot" : "slot";
-    const match = approvedMatches.get(`${selectedDay}|${time}`);
     button.innerHTML = `${time}<small>${isBooked ? (match ? "اضغط لعرض المباراة" : "محجوز — تمت الموافقة") : "متاح — اضغط لطلب الحجز"}</small>`;
     if (isBooked) {
       button.addEventListener("click", () => { if(match) showApprovedMatch(match); });
@@ -84,7 +85,7 @@ onSnapshot(query(collection(db, "bookings"), where("status", "==", "approved")),
   approvedMatches = new Map();
   snapshot.docs.forEach(item => {
     const match = item.data();
-    if (match.day && match.time) approvedMatches.set(`${match.day}|${match.time}`, match);
+    if (match.day && match.time) approvedMatches.set(String(match.day).trim() + "|" + String(match.time).trim(), match);
   });
   renderSlots();
 }, error => console.error("Could not load approved match details:", error));
