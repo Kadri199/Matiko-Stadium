@@ -60,6 +60,8 @@
           <div class="page-heading"><div><h1>نتائج المباريات</h1><p>أضف نتيجة المباراة وأسماء مسجلي الأهداف لكل فريق.</p></div></div>
           <form id="resultForm" class="form-card">
             <div class="form-grid"><label>تاريخ المباراة<input id="matchDate" type="date" required></label><label>الفريق الأول<input id="resultTeam1" required></label><label>نتيجة الفريق الأول<input id="score1" type="number" min="0" required></label><label>الفريق الثاني<input id="resultTeam2" required></label><label>نتيجة الفريق الثاني<input id="score2" type="number" min="0" required></label></div>
+            <div class="form-grid"><label>شعار الفريق الأول<select id="resultCrest1"><option value="">اختيار تلقائي حسب اسم الفريق</option></select></label><label>شعار الفريق الثاني<select id="resultCrest2"><option value="">اختيار تلقائي حسب اسم الفريق</option></select></label></div>
+            <small class="hint">اختر الشعار الحقيقي المناسب لكل فريق من قائمة الأندية. يمكنك اختيار شعار مختلف لكل فريق.</small>
             <div class="form-grid"><label>مسجلو الفريق الأول (اسم اللاعب - عدد الأهداف، كل لاعب في سطر)<textarea id="scorers1" rows="4" placeholder="محمد - 2&#10;أمين - 1"></textarea></label><label>مسجلو الفريق الثاني (اسم اللاعب - عدد الأهداف، كل لاعب في سطر)<textarea id="scorers2" rows="4" placeholder="يوسف - 1"></textarea></label></div>
             <button class="btn btn-primary">نشر النتيجة</button><p class="message" id="resultMessage"></p>
           </form>
