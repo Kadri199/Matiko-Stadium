@@ -147,6 +147,10 @@ $("requestForm").addEventListener("submit", e => {
 onAuthStateChanged(auth, user => {
   currentUser = user;
   document.body.classList.toggle("owner-signed-in", isOwnerAccount(user));
+  if (isOwnerAccount(user) && !location.pathname.endsWith("/admin.html")) {
+    location.href = "admin.html";
+    return;
+  }
   $("loginOpen").textContent = user ? "تسجيل الخروج" : "تسجيل الدخول";
   $("loginOpen").onclick = user ? async () => { await signOut(auth); } : () => openAuth("login");
   if (user) {
