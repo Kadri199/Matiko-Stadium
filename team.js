@@ -11,6 +11,9 @@ const $ = id => document.getElementById(id);
 let currentUser = null;
 let profile = null;
 let ready = false;
+const goHome = () => { window.location.assign("https://kadri199.github.io/Matiko-Stadium/"); };
+document.getElementById("homeBtn").addEventListener("click", goHome);
+document.getElementById("homeBtnBottom").addEventListener("click", goHome);
 const safe = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 function showMessage(id, value, error=false) {
