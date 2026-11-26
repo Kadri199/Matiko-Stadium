@@ -160,16 +160,8 @@ $("requestForm").addEventListener("submit", e => {
 onAuthStateChanged(auth, user => {
   currentUser = user;
   document.body.classList.toggle("owner-signed-in", isOwnerAccount(user));
-  if (user?.email?.toLowerCase() === OWNER_EMAIL && user.uid === OWNER_UID && !location.pathname.endsWith("/admin.html")) {
-    location.href = "admin.html";
-    return;
-  }
   if (user?.email?.toLowerCase() === OWNER_EMAIL && user.uid !== OWNER_UID) {
     showMessage("formMessage", "Owner UID mismatch. Current UID: " + user.uid + ". Send this UID so I can update the owner configuration.");
-  }
-  if (user && !isOwnerAccount(user) && !location.pathname.endsWith("/team.html")) {
-    location.href = "team.html";
-    return;
   }
   $("loginOpen").textContent = user ? "تسجيل الخروج" : "تسجيل الدخول";
   $("loginOpen").onclick = user ? async () => { await signOut(auth); } : () => openAuth("login");
