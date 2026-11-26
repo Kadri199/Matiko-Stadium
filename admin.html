@@ -66,11 +66,11 @@
           <div id="resultsAdminList" class="records-list"></div>
         </section>
         <section class="panel" id="panel-news">
-          <div class="page-heading"><div><h1>أخبار الملعب</h1><p>انشر إعلاناً أو خبراً مع صورة اختيارية. استخدم رابط صورة عامة؛ لا نستخدم Firebase Storage.</p></div></div>
+          <div class="page-heading"><div><h1>أخبار الملعب</h1><p>انشر إعلاناً أو خبراً، ويمكنك اختيار صورة مباشرة من هاتفك.</p></div></div>
           <form id="newsForm" class="form-card">
             <label>عنوان الخبر<input id="newsTitle" required maxlength="120"></label>
             <label>نص الخبر<textarea id="newsBody" rows="5" required></textarea></label>
-            <label>رابط الصورة (اختياري)<input id="newsImage" type="url" placeholder="https://..."></label>
+            <label>صورة الخبر (اختياري)<input id="newsImageFile" type="file" accept="image/*"></label><div id="newsImagePreviewWrap" class="news-upload-preview hidden"><img id="newsImagePreview" alt="معاينة صورة الخبر"><button type="button" id="clearNewsImage" class="btn btn-ghost">إزالة الصورة</button></div><small class="hint">اختر صورة من معرض الهاتف. سيتم رفعها تلقائياً عند نشر الخبر.</small>
             <button class="btn btn-primary">نشر الخبر</button><p class="message" id="newsMessage"></p>
           </form>
           <div id="newsAdminList" class="records-list"></div>
