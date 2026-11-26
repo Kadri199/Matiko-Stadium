@@ -19,6 +19,7 @@ const times = ["16:00 – 17:00","17:00 – 18:00","18:00 – 19:00","19:00 – 
 const slotsGrid = $("slotsGrid");
 let selectedSlot = "";
 let selectedDay = $("daySelect").value;
+let bookedSlots = new Set();
 let authMode = "login";
 let currentUser = null;
 
@@ -32,9 +33,11 @@ function renderSlots(){
   slotsGrid.innerHTML = "";
   times.forEach((time) => {
     const button = document.createElement("button");
-    button.className = "slot";
-    button.innerHTML = `${time}<small>متاح — اضغط لطلب الحجز</small>`;
-    button.addEventListener("click", () => {
+    const isBooked = bookedSlots.has(`${selectedDay}|${time}`);
+    button.className = isBooked ? "slot booked-slot" : "slot";
+    button.innerHTML = `${time}<small>${isBooked ? "محجوز — تمت الموافقة" : "متاح — اضغط لطلب الحجز"}</small>`;
+    button.disabled = isBooked;
+    if (!isBooked) button.addEventListener("click", () => {
       selectedSlot = time;
       $("requestTitle").textContent = "طلب حجز — " + selectedDay + " — " + time;
       $("requestMessage").textContent = currentUser ? "" : "يرجى تسجيل الدخول أولاً لإرسال طلب الحجز.";
@@ -44,6 +47,11 @@ function renderSlots(){
   });
 }
 renderSlots();
+
+onSnapshot(doc(db, "settings", "schedule"), snapshot => {
+  bookedSlots = new Set(snapshot.exists() ? (snapshot.data().bookedSlots || []) : []);
+  renderSlots();
+}, error => console.error("Could not load approved booking slots:", error));
 
 function renderHomepageChallenges(snapshot) {
   const host = $("challengeList");
