@@ -76,39 +76,22 @@
 
 
   <section class="section games-zone" id="games">
-    <div class="container">
-      <div class="section-heading"><div><span class="eyebrow">MATIKO GAMES ARENA</span><h2>منطقة الألعاب والتحدي</h2><p>العب، سجّل أفضل نتيجة، ونافس أبطال الملعب!</p></div></div>
-      <div class="games-grid">
-        <article class="game-card" aria-label="لعبة ضربات الجزاء">
-          <div class="game-card-head"><span class="game-icon">⚽</span><div><h3>ضربات الجزاء</h3><p class="game-subtitle">5 تسديدات — تجاوز الحارس!</p></div></div>
-          <label class="game-name-label" for="penaltyName">اسم اللاعب</label>
-          <input class="game-name-input" id="penaltyName" maxlength="24" placeholder="اكتب اسمك قبل اللعب">
-          <div class="game-main">
-            <div class="game-scoreline"><span>الأهداف: <strong id="penaltyScore">0</strong></span><span>التسديدات <b id="penaltyRound">0 / 5</b></span></div>
-            <p class="game-status" id="penaltyStatus" aria-live="polite">ابدأ التحدي ثم اختر جهة التسديد.</p>
-            <div class="game-directions"><button class="game-action" data-penalty-shot="left">⬅ يسار</button><button class="game-action" data-penalty-shot="center">⬆ وسط</button><button class="game-action" data-penalty-shot="right">يمين ➡</button></div>
-            <div class="game-actions" style="margin-top:8px"><button class="game-action primary" id="penaltyStart">ابدأ التحدي</button></div>
-          </div>
-          <div class="game-leaderboard"><div class="game-leaderboard-title"><strong>🏆 أفضل 10 — ضربات الجزاء</strong><span>TOP 10</span></div><ol class="game-top-list" id="penaltyTop"><li class="game-empty">جارٍ تحميل الترتيب...</li></ol></div>
-          <p class="game-footnote">🥇🥈🥉 للمراكز الثلاثة الأولى</p>
-        </article>
-        <article class="game-card" aria-label="لعبة العارضة العنيدة">
-          <div class="game-card-head"><span class="game-icon">🥅</span><div><h3>العارضة العنيدة</h3><p class="game-subtitle">5 محاولات — اضبط قوة التسديدة!</p></div></div>
-          <label class="game-name-label" for="crossbarName">اسم اللاعب</label>
-          <input class="game-name-input" id="crossbarName" maxlength="24" placeholder="اكتب اسمك قبل اللعب">
-          <div class="game-main">
-            <div class="game-scoreline"><span>الإصابات: <strong id="crossbarScore">0</strong></span><span>المحاولات <b id="crossbarRound">0 / 5</b></span></div>
-            <p class="game-status" id="crossbarStatus" aria-live="polite">أوقف مؤشر القوة داخل المنطقة الذهبية.</p>
-            <div class="game-meter"><div class="game-meter-fill" id="crossbarMeter"></div></div>
-            <div class="game-meter-zones"><span>ضعيفة</span><b style="color:#d5f59a">المنطقة المثالية</b><span>قوية</span></div>
-            <div class="game-actions" style="margin-top:9px"><button class="game-action primary" id="crossbarHit" disabled>اضرب الآن!</button><button class="game-action" id="crossbarStart">ابدأ التحدي</button></div>
-          </div>
-          <div class="game-leaderboard"><div class="game-leaderboard-title"><strong>🏆 أفضل 10 — العارضة العنيدة</strong><span>TOP 10</span></div><ol class="game-top-list" id="crossbarTop"><li class="game-empty">جارٍ تحميل الترتيب...</li></ol></div>
-          <p class="game-footnote">🥇🥈🥉 للمراكز الثلاثة الأولى</p>
-        </article>
-      </div>
+  <div class="container">
+    <div class="section-heading"><div><span class="eyebrow">MATIKO GAMES ARENA</span><h2>منطقة الألعاب والتحدي</h2><p>اختر لعبتك ونافس أبطال الملعب على المراتب الأولى!</p></div></div>
+    <div class="games-grid games-launch-grid">
+      <a class="game-launch-card" href="penalty.html" aria-label="العب ضربات الجزاء">
+        <span class="game-launch-icon">⚽</span><h3>ضربات الجزاء</h3>
+        <p>اختبر دقتك وتجاوز الحارس!</p><strong class="game-launch-top">🏆 أفضل 10 لاعبين</strong>
+        <span class="game-launch-button">العب الآن <b>←</b></span>
+      </a>
+      <a class="game-launch-card" href="crossbar.html" aria-label="العب العارضة العنيدة">
+        <span class="game-launch-icon">🥅</span><h3>العارضة العنيدة</h3>
+        <p>هل تستطيع إصابة العارضة؟</p><strong class="game-launch-top">🏆 أفضل 10 لاعبين</strong>
+        <span class="game-launch-button">العب الآن <b>←</b></span>
+      </a>
     </div>
-  </section>
+  </div>
+</section>
 
   <section class="section about-section" id="about">
     <div class="container about-grid"><div><span class="eyebrow green">من نحن</span><h2>عن الملعب</h2><p id="aboutDescriptionHome">الملعب الجواري أولاد مبارك فضاء رياضي يجمع محبي كرة القدم في أجواء من التنافس والاحترام والروح الرياضية.</p><div id="aboutContactHome" class="about-contact hidden"></div><div class="about-points"><span>✓ تنظيم المواعيد</span><span>✓ تحديات بين الفرق</span><span>✓ نتائج وأخبار المباريات</span></div></div><div class="about-visual"><div class="pitch-lines"></div><span>⚽</span><b>نلعب بروح الفريق</b></div></div>
