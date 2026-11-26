@@ -76,11 +76,10 @@ function finishGame(game) {
   s.busy = false;
   if (s.timer) { clearInterval(s.timer); s.timer = null; }
   updateScore(game);
-  const name = safeName(game);
-  if (!name) return;
+  const name = s.playerName;
   showStatus(game, "انتهى التحدي! نتيجتك " + s.score + " من 5. جارٍ حفظها...", "good");
-  addDoc(scoreCollection, {
-    game, name, score: s.score, createdAt: serverTimestamp()
+  addDoc(scoreCollection(game), {
+    name, score: s.score, createdAt: serverTimestamp()
   }).then(() => showStatus(game, "تم حفظ نتيجتك! راقب ترتيب أفضل 10 لاعبين.", "good"))
     .catch(error => {
       console.error("Could not save game score:", error);
