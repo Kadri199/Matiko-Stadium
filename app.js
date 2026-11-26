@@ -15,7 +15,8 @@ $("year").textContent = new Date().getFullYear();
 const OWNER_EMAIL = "afterdark706@gmail.com";
 const OWNER_UID = "hU0pqkyVYMYhBQ5GBAPHcHemph23";
 const isOwnerAccount = (user) => !!user && user.uid === OWNER_UID && user.email?.toLowerCase() === OWNER_EMAIL;
-const times = ["16:00 – 17:00","17:00 – 18:00","18:00 – 19:00","19:00 – 20:00","20:00 – 21:00","21:00 – 22:00"];
+const defaultTimes = ["16:00 – 17:00","17:00 – 18:00","18:00 – 19:00","19:00 – 20:00","20:00 – 21:00","21:00 – 22:00"];
+let times = [...defaultTimes];
 const slotsGrid = $("slotsGrid");
 let selectedSlot = "";
 const arabicWeekdays = ["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
@@ -26,7 +27,6 @@ daySelect.addEventListener("change", () => {
   selectedDay = daySelect.value;
   renderSlots();
 });
-let bookedSlots = new Set();
 let approvedMatches = new Map();
 function normalizeMatchKey(day, time){
   const cleanDay=String(day||"").trim().replace(/\s+/g,"");
@@ -64,7 +64,7 @@ function renderSlots(){
     const button = document.createElement("button");
     const key = normalizeMatchKey(selectedDay,time);
     const match = approvedMatches.get(key);
-    const isBooked = bookedSlots.has(key) || !!match;
+    const isBooked = !!match;
     button.className = isBooked ? "slot booked-slot" : "slot";
     button.innerHTML = `${time}<small>${isBooked ? (match ? "اضغط لعرض المباراة" : "محجوز — تمت الموافقة") : "متاح — اضغط لطلب الحجز"}</small>`;
     if (isBooked) {
@@ -82,9 +82,14 @@ function renderSlots(){
 renderSlots();
 
 onSnapshot(doc(db, "settings", "schedule"), snapshot => {
-  bookedSlots = new Set(snapshot.exists() ? (snapshot.data().bookedSlots || []) : []);
+  const data = snapshot.exists() ? snapshot.data() : {};
+  const configuredTimes = Array.isArray(data.times)
+    ? data.times.map(value => String(value).trim()).filter(Boolean)
+    : [];
+  times = configuredTimes.length ? configuredTimes : [...defaultTimes];
+  if (!times.includes(selectedSlot)) selectedSlot = "";
   renderSlots();
-}, error => console.error("Could not load approved booking slots:", error));
+}, error => console.error("Could not load schedule settings:", error));
 
 onSnapshot(query(collection(db, "bookings"), where("status", "==", "approved")), snapshot => {
   approvedMatches = new Map();
