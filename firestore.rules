@@ -61,8 +61,10 @@ service cloud.firestore {
           "teamUid", "teamEmail", "teamName", "opponentName",
           "day", "time", "note", "status", "createdAt"
         ]);
-      // Public can read approved match details for the homepage popup; pending requests remain private.
-      allow read: if isOwner() || resource.data.status == "approved" || (signedIn() && resource.data.teamUid == request.auth.uid);
+      // Homepage may LIST only approved bookings; pending/rejected requests stay private.
+      // The owner can list every booking, and each team can read its own booking.
+      allow get: if isOwner() || resource.data.status == "approved" || (signedIn() && resource.data.teamUid == request.auth.uid);
+      allow list: if isOwner() || resource.data.status == "approved";
       allow update, delete: if isOwner();
     }
 
