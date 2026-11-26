@@ -249,11 +249,13 @@ function renderHomepageResults(snapshot) {
     date.className = "broadcast-date";
     if (item.date) {
       const parsed = new Date(item.date + "T00:00:00");
-      const dateLabel = Number.isNaN(parsed.getTime()) ? item.date : parsed.toLocaleDateString("ar-DZ", { day: "numeric", month: "long", year: "numeric" });
-      date.textContent = dateLabel + (item.time ? " • " + item.time : "");
+      date.textContent = Number.isNaN(parsed.getTime()) ? item.date : parsed.toLocaleDateString("ar-DZ", { day: "numeric", month: "long", year: "numeric" });
     } else {
       date.textContent = "نتيجة مباراة";
     }
+    const time = document.createElement("div");
+    time.className = "broadcast-time";
+    time.textContent = item.time || "";
 
     const scoreRow = document.createElement("div");
     scoreRow.className = "broadcast-score-row";
@@ -431,7 +433,7 @@ function renderHomepageResults(snapshot) {
       return column;
     };
     scorers.append(addScorers(item.scorers1, "home"), addScorers(item.scorers2, "away"));
-    card.append(top, date, scoreRow, scorerTitle, scorers);
+    card.append(top, date, time, scoreRow, scorerTitle, scorers);
 
     host.appendChild(card);
   });
