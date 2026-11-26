@@ -23,6 +23,63 @@ function parseScorers(value) {
     return {name:line.replace(/\s*\(\d+\)\s*$/,"").trim(),goals:0};
   }).filter(x=>x.name);
 }
+function openScorersEditor(team1, team2, current1, current2) {
+  return new Promise(resolve => {
+    const overlay=document.createElement("div");
+    overlay.style.cssText="position:fixed;inset:0;z-index:9999;background:#071b13a8;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto";
+    const panel=document.createElement("section");
+    panel.dir="rtl";
+    panel.style.cssText="width:min(560px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:18px;padding:20px;box-shadow:0 20px 60px #0004;color:#18352b;font-family:Cairo,sans-serif";
+    const heading=document.createElement("h2");
+    heading.textContent="تعديل أسماء مسجلي الأهداف";
+    heading.style.cssText="font-size:18px;margin:0 0 14px";
+    panel.appendChild(heading);
+    const fields=[];
+    [[team1,current1],[team2,current2]].forEach(([team,value])=>{
+      const label=document.createElement("label");
+      label.textContent="مسجلو "+team+" (كل لاعب في سطر)";
+      label.style.cssText="display:block;font-size:13px;font-weight:800;margin:12px 0 6px";
+      const area=document.createElement("textarea");
+      area.value=value;
+      area.rows=5;
+      area.dir="rtl";
+      area.placeholder="عادل محمد سمير\nلاعب آخر";
+      area.style.cssText="display:block;width:100%;min-height:112px;resize:vertical;box-sizing:border-box;border:1px solid #cbd9d0;border-radius:10px;padding:11px 12px;font:16px/1.8 Cairo,sans-serif;color:#18352b;background:#fff;white-space:pre-wrap";
+      area.setAttribute("aria-label",label.textContent);
+      panel.append(label,area);
+      fields.push(area);
+    });
+    const hint=document.createElement("p");
+    hint.textContent="اضغط Enter لإضافة اسم اللاعب التالي في سطر جديد. يمكنك كتابة عدد الأهداف هكذا: محمد - 2";
+    hint.style.cssText="font-size:11px;color:#708078;margin:10px 0";
+    const actions=document.createElement("div");
+    actions.style.cssText="display:flex;gap:9px;margin-top:14px";
+    const cancel=document.createElement("button");
+    cancel.type="button";cancel.textContent="إلغاء";
+    cancel.style.cssText="flex:1;border:1px solid #dce6df;border-radius:10px;padding:11px;background:#f5f8f5;color:#18352b;font:700 13px Cairo,sans-serif";
+    const save=document.createElement("button");
+    save.type="button";save.textContent="حفظ المسجلين";
+    save.style.cssText="flex:1;border:0;border-radius:10px;padding:11px;background:#116149;color:#fff;font:800 13px Cairo,sans-serif";
+    actions.append(cancel,save);
+    panel.append(hint,actions);
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+    let finished=false;
+    const close=value=>{
+      if(finished)return;
+      finished=true;
+      document.removeEventListener("keydown",onKey);
+      overlay.remove();
+      resolve(value);
+    };
+    const onKey=e=>{if(e.key==="Escape")close(null);};
+    document.addEventListener("keydown",onKey);
+    cancel.addEventListener("click",()=>close(null));
+    save.addEventListener("click",()=>close({scorers1:fields[0].value,scorers2:fields[1].value}));
+    overlay.addEventListener("click",e=>{if(e.target===overlay)close(null);});
+    fields[0].focus();
+  });
+}
 function renderRecords(target, docs, type) {
   const host=$(target); host.innerHTML="";
   if(!docs.length){host.innerHTML='<div class="empty-state">لا توجد بيانات منشورة بعد.</div>';return;}
@@ -52,15 +109,13 @@ function renderRecords(target, docs, type) {
       edit.addEventListener("click",async()=>{
         const current1=(d.scorers1||[]).map(x=>x.name+(Number(x.goals)>0?" - "+x.goals:"")).join("\n");
         const current2=(d.scorers2||[]).map(x=>x.name+(Number(x.goals)>0?" - "+x.goals:"")).join("\n");
-        const entered1=prompt("أدخل مسجلي "+(d.team1||"الفريق الأول")+"، لاعب في كل سطر (مثال: محمد - 2):",current1);
-        if(entered1===null)return;
-        const entered2=prompt("أدخل مسجلي "+(d.team2||"الفريق الثاني")+"، لاعب في كل سطر (مثال: أمين - 1):",current2);
-        if(entered2===null)return;
+        const entered=await openScorersEditor(d.team1||"الفريق الأول",d.team2||"الفريق الثاني",current1,current2);
+        if(!entered)return;
         edit.disabled=true;
         try{
           await updateDoc(doc(db,"results",item.id),{
-            scorers1:parseScorers(entered1),
-            scorers2:parseScorers(entered2)
+            scorers1:parseScorers(entered.scorers1),
+            scorers2:parseScorers(entered.scorers2)
           });
           await loadAll();
           message("resultMessage","تم تحديث أسماء المسجلين فقط دون تغيير النتيجة.");
