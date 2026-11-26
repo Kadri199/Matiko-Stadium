@@ -1,7 +1,7 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import {
-  collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, updateDoc, serverTimestamp, query, where
+  collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, updateDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const OWNER_UID = "hU0pqkyVYMYhBQ5GBAPHcHemph23";
@@ -81,8 +81,9 @@ async function loadBookings(){
           btn.disabled=true;
           try{
             if(status==="approved"){
-              const conflict=await getDocs(query(collection(db,"bookings"),where("day","==",d.day),where("time","==",d.time),where("status","==","approved")));
-              if(!conflict.empty) throw new Error("هذا الموعد محجوز بالفعل. اختر طلباً آخر.");
+              const allBookings=await getDocs(collection(db,"bookings"));
+              const conflict=allBookings.docs.some(x=>x.id!==item.id&&x.data().day===d.day&&x.data().time===d.time&&x.data().status==="approved");
+              if(conflict) throw new Error("هذا الموعد محجوز بالفعل. اختر طلباً آخر.");
             }
             await updateDoc(doc(db,"bookings",item.id),{status,reviewedAt:serverTimestamp()});
             await loadBookings();
