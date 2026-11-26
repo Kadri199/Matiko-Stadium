@@ -256,16 +256,61 @@ function renderHomepageResults(snapshot) {
 
     const scoreRow = document.createElement("div");
     scoreRow.className = "broadcast-score-row";
+    const knownClubCrests = [
+      { names:["real madrid","ريال مدريد"], url:"https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg" },
+      { names:["barcelona","fc barcelona","برشلونة"], url:"https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg" },
+      { names:["manchester united","man united","مانشستر يونايتد"], url:"https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg" },
+      { names:["liverpool","ليفربول"], url:"https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg" },
+      { names:["manchester city","مانشستر سيتي"], url:"https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg" },
+      { names:["arsenal","ارسنال","أرسنال"], url:"https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg" },
+      { names:["chelsea","تشيلسي"], url:"https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg" },
+      { names:["tottenham","tottenham hotspur","توتنهام"], url:"https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg" },
+      { names:["bayern munich","bayern","بايرن ميونخ","بايرن"], url:"https://upload.wikimedia.org/wikipedia/en/1/1f/FC_Bayern_München_logo_%282017%29.svg" },
+      { names:["borussia dortmund","dortmund","بوروسيا دورتموند","دورتموند"], url:"https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg" },
+      { names:["paris saint-germain","paris saint germain","psg","باريس سان جيرمان"], url:"https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg" },
+      { names:["juventus","يوفنتوس"], url:"https://upload.wikimedia.org/wikipedia/commons/1/15/Juventus_FC_2017_logo.svg" },
+      { names:["inter milan","inter","انتر ميلان","إنتر ميلان"], url:"https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg" },
+      { names:["ac milan","milan","ميلان"], url:"https://upload.wikimedia.org/wikipedia/commons/d/d0/Logo_of_AC_Milan.svg" },
+      { names:["atletico madrid","اتلتيكو مدريد","أتلتيكو مدريد"], url:"https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg" },
+      { names:["ajax","أياكس","اياكس"], url:"https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg" }
+    ];
+    const normalizeClubName = value => String(value || "").toLowerCase().normalize("NFKD")
+      .replace(/[\\u064B-\\u065F\\u0670ـ]/g,"").replace(/[أإآٱ]/g,"ا")
+      .replace(/[^a-z0-9\\u0600-\\u06ff]/g,"");
     const makeTeam = (name, side) => {
       const team = document.createElement("div");
       team.className = "broadcast-team broadcast-team-" + side;
-      const crest = document.createElement("span");
-      crest.className = "broadcast-crest";
-      crest.textContent = String(name || "؟").trim().slice(0, 1);
+      const cleanName = normalizeClubName(name);
+      const club = knownClubCrests.find(entry => entry.names.some(alias => normalizeClubName(alias) === cleanName));
+      if (club) {
+        const crest = document.createElement("img");
+        crest.className = "broadcast-crest-img";
+        crest.src = club.url;
+        crest.alt = "شعار " + name;
+        crest.loading = "lazy";
+        crest.referrerPolicy = "no-referrer";
+        crest.onerror = () => {
+          crest.remove();
+          const fallback = makeRandomCrest(name, side);
+          team.insertBefore(fallback, team.firstChild);
+        };
+        team.appendChild(crest);
+      } else {
+        team.appendChild(makeRandomCrest(name, side));
+      }
       const label = document.createElement("strong");
       label.textContent = name || (side === "home" ? "الفريق الأول" : "الفريق الثاني");
-      team.append(crest, label);
+      team.appendChild(label);
       return team;
+    };
+    const makeRandomCrest = (name, side) => {
+      const symbols = ["⚽","🦁","🛡️","⭐","👑","🐺","🦅","🔥"];
+      const hash = Array.from(String(name || side)).reduce((value,char) => ((value * 31) + char.charCodeAt(0)) >>> 0, 7);
+      const crest = document.createElement("span");
+      crest.className = "broadcast-crest broadcast-crest-random crest-style-" + (hash % 4);
+      crest.textContent = symbols[hash % symbols.length];
+      crest.setAttribute("aria-label","شعار فريق رمزي");
+      return crest;
     };
     const team1 = makeTeam(item.team1, "home");
     const score = document.createElement("div");
@@ -301,8 +346,15 @@ function renderHomepageResults(snapshot) {
           const goals = Number(player.goals || 0);
           if (goals > 0) {
             const count = document.createElement("b");
-            count.textContent = goals + " ⚽";
+            count.className = "broadcast-goal-count";
+            count.textContent = "⚽ × " + goals;
             row.append(name, count);
+            if (goals >= 3) {
+              const hattrick = document.createElement("span");
+              hattrick.className = "broadcast-hattrick";
+              hattrick.textContent = "هاتريك";
+              row.appendChild(hattrick);
+            }
           } else {
             row.append(name);
           }
@@ -314,24 +366,6 @@ function renderHomepageResults(snapshot) {
     scorers.append(addScorers(item.scorers1, "home"), addScorers(item.scorers2, "away"));
     card.append(top, date, scoreRow, scorerTitle, scorers);
 
-    if (isOwnerAccount(currentUser)) {
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.className = "result-delete-btn";
-      remove.textContent = "🗑 حذف النتيجة";
-      remove.addEventListener("click", async () => {
-        const label = (item.team1 || "الفريق الأول") + " ضد " + (item.team2 || "الفريق الثاني");
-        if (!confirm("هل تريد حذف نتيجة مباراة " + label + " نهائياً؟")) return;
-        remove.disabled = true;
-        try {
-          await deleteDoc(doc(db, "results", item.id));
-        } catch (error) {
-          alert("تعذر حذف النتيجة: " + error.message);
-          remove.disabled = false;
-        }
-      });
-      card.append(remove);
-    }
     host.appendChild(card);
   });
 }
