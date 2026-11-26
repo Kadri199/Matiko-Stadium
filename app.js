@@ -173,16 +173,39 @@ $("requestForm").addEventListener("submit", async e => {
   finally { if(submit){submit.disabled=false;submit.textContent="إرسال الطلب";} }
 });
 
-onAuthStateChanged(auth, user => {
+$("teamLogout").addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    alert("تعذر تسجيل الخروج: " + error.message);
+  }
+});
+
+onAuthStateChanged(auth, async user => {
   currentUser = user;
   document.body.classList.toggle("owner-signed-in", isOwnerAccount(user));
+  const teamHeader = $("teamHeaderAccount");
+  teamHeader.classList.add("hidden");
+  $("loginOpen").classList.remove("hidden");
+  $("loginOpen").textContent = user ? "تسجيل الخروج" : "تسجيل الدخول";
+  $("loginOpen").title = user?.email || "";
+  $("loginOpen").onclick = user ? async () => { await signOut(auth); } : () => openAuth("login");
+
   if (user?.email?.toLowerCase() === OWNER_EMAIL && user.uid !== OWNER_UID) {
     showMessage("formMessage", "Owner UID mismatch. Current UID: " + user.uid + ". Send this UID so I can update the owner configuration.");
   }
-  $("loginOpen").textContent = user ? "تسجيل الخروج" : "تسجيل الدخول";
-  $("loginOpen").onclick = user ? async () => { await signOut(auth); } : () => openAuth("login");
-  if (user) {
-    $("loginOpen").title = user.email || "";
+
+  if (user && !isOwnerAccount(user)) {
+    try {
+      const profile = await getDoc(doc(db, "users", user.uid));
+      if (auth.currentUser?.uid === user.uid && profile.exists() && profile.data().role === "team") {
+        $("headerTeamName").textContent = profile.data().fullName || "فريقي";
+        teamHeader.classList.remove("hidden");
+        $("loginOpen").classList.add("hidden");
+      }
+    } catch (error) {
+      console.error("Could not load team name for header:", error);
+    }
   }
 });
 
