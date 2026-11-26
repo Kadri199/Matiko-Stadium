@@ -28,6 +28,11 @@ daySelect.addEventListener("change", () => {
 });
 let bookedSlots = new Set();
 let approvedMatches = new Map();
+function normalizeMatchKey(day, time){
+  const cleanDay=String(day||"").trim().replace(/\s+/g,"");
+  const cleanTime=String(time||"").trim().replace(/[–—−]/g,"-").replace(/\s+/g,"");
+  return cleanDay+"|"+cleanTime;
+}
 let matchInfoBackdrop = null;
 function showApprovedMatch(match){
   if(!matchInfoBackdrop){
@@ -57,7 +62,7 @@ function renderSlots(){
   slotsGrid.innerHTML = "";
   times.forEach((time) => {
     const button = document.createElement("button");
-    const key = String(selectedDay || "").trim() + "|" + String(time || "").trim();
+    const key = normalizeMatchKey(selectedDay,time);
     const match = approvedMatches.get(key);
     const isBooked = bookedSlots.has(key) || !!match;
     button.className = isBooked ? "slot booked-slot" : "slot";
@@ -85,7 +90,7 @@ onSnapshot(query(collection(db, "bookings"), where("status", "==", "approved")),
   approvedMatches = new Map();
   snapshot.docs.forEach(item => {
     const match = item.data();
-    if (match.day && match.time) approvedMatches.set(String(match.day).trim() + "|" + String(match.time).trim(), match);
+    if (match.day && match.time) approvedMatches.set(normalizeMatchKey(match.day,match.time), match);
   });
   renderSlots();
 }, error => console.error("Could not load approved match details:", error));
