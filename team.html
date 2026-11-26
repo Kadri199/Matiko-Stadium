@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b3d2e">
+  <title>مساحة الفريق | الملعب الجواري أولاد مبارك</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="team.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="ball">⚽</span><span><b>ملعب أولاد مبارك</b><small>مساحة الفريق</small></span></a>
+  <div class="top-actions"><span id="teamEmail"></span><button id="logoutBtn" class="btn btn-light">تسجيل الخروج</button></div>
+</header>
+<main class="wrap">
+  <section class="welcome">
+    <div><span class="eyebrow">مرحباً بك في مساحة فريقك</span><h1 id="teamName">فريقي</h1><p>من هنا يمكنك نشر تحدٍ ومتابعة التحديات التي تخص فريقك.</p></div>
+    <div class="welcome-ball">⚽</div>
+  </section>
+  <div id="pageMessage" class="message" role="status">جارٍ تحميل بيانات الفريق...</div>
+  <section class="stats">
+    <article><span>تحدياتي</span><b id="myChallengeCount">0</b></article>
+    <article><span>تحديات مفتوحة</span><b id="openChallengeCount">0</b></article>
+    <article><span>تحديات قبلتها</span><b id="acceptedCount">0</b></article>
+  </section>
+  <section class="panel">
+    <div class="section-title"><div><span class="eyebrow dark">ابدأ المنافسة</span><h2>نشر تحدي جديد</h2><p>اختر اليوم والساعة، وسيظهر التحدي للفرق الأخرى.</p></div></div>
+    <form id="challengeForm" class="challenge-form">
+      <label>اليوم<select id="challengeDay" required><option value="">اختر اليوم</option><option>السبت</option><option>الأحد</option><option>الإثنين</option><option>الثلاثاء</option><option>الأربعاء</option><option>الخميس</option><option>الجمعة</option></select></label>
+      <label>الساعة<select id="challengeTime" required><option value="">اختر الساعة</option><option>16:00</option><option>17:00</option><option>18:00</option><option>19:00</option><option>20:00</option><option>21:00</option></select></label>
+      <label class="wide">ملاحظة اختيارية<textarea id="challengeNote" rows="2" maxlength="300" placeholder="مثلاً: نبحث عن مباراة ودية..."></textarea></label>
+      <button class="btn btn-primary" id="publishBtn" type="submit">＋ نشر تحدي</button>
+      <p id="challengeMessage" class="form-message wide"></p>
+    </form>
+  </section>
+  <section class="panel">
+    <div class="section-title"><div><span class="eyebrow dark">واجه فريقاً جديداً</span><h2>التحديات المفتوحة</h2><p>يمكنك قبول تحدٍ واحد من فريق آخر.</p></div><button class="btn btn-outline" id="refreshBtn">تحديث</button></div>
+    <div id="openChallenges" class="cards"><div class="empty">جارٍ تحميل التحديات...</div></div>
+  </section>
+  <section class="panel">
+    <div class="section-title"><div><span class="eyebrow dark">نشاط فريقك</span><h2>تحدياتي وقبولاتي</h2></div></div>
+    <div id="myChallenges" class="cards"><div class="empty">جارٍ التحميل...</div></div>
+  </section>
+  <p class="footnote">طلبات حجز المواعيد والمحادثة بين الفريقين ستُفعّل في المرحلة التالية بعد استكمال قواعد الحجز الآمن.</p>
+  <a class="back" href="index.html">← العودة إلى الموقع الرئيسي</a>
+</main>
+<script type="module" src="team.js"></script>
+</body>
+</html>
