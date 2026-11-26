@@ -6,7 +6,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import {
-  doc, getDoc, setDoc, collection, addDoc, serverTimestamp
+  doc, getDoc, setDoc, collection, addDoc, serverTimestamp, onSnapshot, query, where
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const $ = (id) => document.getElementById(id);
@@ -44,6 +44,54 @@ function renderSlots(){
   });
 }
 renderSlots();
+
+function renderHomepageChallenges(snapshot) {
+  const host = $("challengeList");
+  host.innerHTML = "";
+  const items = snapshot.docs
+    .map(item => ({ id: item.id, ...item.data() }))
+    .sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+  if (!items.length) {
+    host.innerHTML = '<article class="empty-card"><span>🏆</span><h3>لا توجد تحديات مفتوحة حالياً</h3><p>سجّل الدخول وانشر تحدياً لفريقك.</p></article>';
+    return;
+  }
+  items.forEach(item => {
+    const card = document.createElement("article");
+    card.className = "challenge-card";
+    const top = document.createElement("div");
+    top.className = "card-top";
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.textContent = "تحدٍ مفتوح";
+    top.append(tag);
+    const title = document.createElement("h3");
+    title.textContent = item.teamName || "فريق";
+    const meta = document.createElement("div");
+    meta.className = "match-meta";
+    const day = document.createElement("span");
+    day.textContent = "📅 " + (item.day || "");
+    const time = document.createElement("span");
+    time.textContent = "🕕 " + (item.time || "");
+    meta.append(day,time);
+    const note = document.createElement("p");
+    note.textContent = item.note || "لا توجد ملاحظة.";
+    const action = document.createElement("button");
+    action.className = "btn btn-outline-dark";
+    action.textContent = "قبول التحدي";
+    action.addEventListener("click", () => {
+      if (currentUser && !isOwnerAccount(currentUser)) location.href = "team.html";
+      else openAuth("login");
+    });
+    card.append(top,title,meta,note,action);
+    host.append(card);
+  });
+}
+
+onSnapshot(query(collection(db, "challenges"), where("status", "==", "open")), renderHomepageChallenges, error => {
+  console.error("Could not load homepage challenges:", error);
+  $("challengeList").innerHTML = '<article class="empty-card"><h3>تعذر تحميل التحديات</h3><p>يرجى تحديث الصفحة لاحقاً.</p></article>';
+});
+
 $("daySelect").addEventListener("change", () => {
   selectedDay = $("daySelect").value;
   renderSlots();
