@@ -61,7 +61,13 @@ function openAuth(mode){
 }
 $("loginOpen").addEventListener("click", () => openAuth("login"));
 $("ownerLogin").addEventListener("click", () => openAuth("owner"));
-$("publishChallenge").addEventListener("click", () => openAuth("login"));
+$("publishChallenge").addEventListener("click", () => {
+  if (currentUser && !isOwnerAccount(currentUser)) {
+    location.href = "team.html";
+  } else {
+    openAuth("login");
+  }
+});
 $("modalClose").addEventListener("click", () => $("modalBackdrop").classList.remove("open"));
 $("requestClose").addEventListener("click", () => $("requestBackdrop").classList.remove("open"));
 $("modalBackdrop").addEventListener("click", e => { if(e.target === $("modalBackdrop")) $("modalBackdrop").classList.remove("open"); });
