@@ -139,6 +139,49 @@ function openCrestsEditor(team1,team2,crest1="",crest2="") {
     overlay.addEventListener("click",e=>{if(e.target===overlay)close(null);});
   });
 }
+async function openResultTimeEditor(currentTime="") {
+  const scheduleSnap=await getDoc(doc(db,"settings","schedule"));
+  const configured=scheduleSnap.exists()&&Array.isArray(scheduleSnap.data().times)&&scheduleSnap.data().times.length
+    ? scheduleSnap.data().times : timesDefault;
+  const choices=[...configured.map(value=>String(value).trim()).filter(Boolean)];
+  if(currentTime&&!choices.includes(currentTime)) choices.unshift(currentTime);
+  return new Promise(resolve=>{
+    const overlay=document.createElement("div");
+    overlay.style.cssText="position:fixed;inset:0;z-index:10001;background:#071b13a8;display:flex;align-items:center;justify-content:center;padding:16px";
+    const panel=document.createElement("section");
+    panel.dir="rtl";
+    panel.style.cssText="width:min(420px,100%);background:#fff;border-radius:18px;padding:20px;box-shadow:0 20px 60px #0004;color:#18352b;font-family:Cairo,sans-serif";
+    const title=document.createElement("h2");
+    title.textContent="تعديل وقت المباراة";
+    title.style.cssText="font-size:18px;margin:0 0 14px";
+    const label=document.createElement("label");
+    label.textContent="اختر الوقت من جدول المواعيد";
+    label.style.cssText="display:block;font-size:13px;font-weight:800;margin:10px 0 7px";
+    const select=document.createElement("select");
+    select.style.cssText="width:100%;box-sizing:border-box;border:1px solid #cbd9d0;border-radius:10px;padding:12px;background:#fff;color:#18352b;font:15px Cairo,sans-serif";
+    choices.forEach(time=>{
+      const option=document.createElement("option");
+      option.value=time;option.textContent=time;select.appendChild(option);
+    });
+    select.value=currentTime&&choices.includes(currentTime)?currentTime:(choices[0]||"");
+    label.appendChild(select);
+    const actions=document.createElement("div");
+    actions.style.cssText="display:flex;gap:9px;margin-top:16px";
+    const cancel=document.createElement("button");
+    cancel.type="button";cancel.textContent="إلغاء";
+    cancel.style.cssText="flex:1;border:1px solid #dce6df;border-radius:10px;padding:11px;background:#f5f8f5;color:#18352b;font:700 13px Cairo,sans-serif";
+    const save=document.createElement("button");
+    save.type="button";save.textContent="حفظ الوقت";
+    save.style.cssText="flex:1;border:0;border-radius:10px;padding:11px;background:#116149;color:#fff;font:800 13px Cairo,sans-serif";
+    actions.append(cancel,save);
+    panel.append(title,label,actions);overlay.appendChild(panel);document.body.appendChild(overlay);
+    let done=false;
+    const close=value=>{if(done)return;done=true;overlay.remove();resolve(value);};
+    cancel.addEventListener("click",()=>close(null));
+    save.addEventListener("click",()=>close(select.value));
+    overlay.addEventListener("click",e=>{if(e.target===overlay)close(null);});
+  });
+}
 function renderRecords(target, docs, type) {
   const host=$(target); host.innerHTML="";
   if(!docs.length){host.innerHTML='<div class="empty-state">لا توجد بيانات منشورة بعد.</div>';return;}
@@ -196,6 +239,23 @@ function renderRecords(target, docs, type) {
           message("resultMessage","تم تحديث شعاري الفريقين.");
         }catch(error){alert("تعذر تحديث الشعارين: "+error.message);crestEdit.disabled=false;}
       });
+      const timeEdit=document.createElement("button");
+      timeEdit.className="edit-btn";
+      timeEdit.textContent="تعديل الوقت";
+      timeEdit.addEventListener("click",async()=>{
+        timeEdit.disabled=true;
+        try{
+          const chosenTime=await openResultTimeEditor(d.time||"");
+          if(!chosenTime)return;
+          await updateDoc(doc(db,"results",item.id),{time:chosenTime});
+          await loadAll();
+          message("resultMessage","تم تحديث وقت المباراة.");
+        }catch(error){
+          alert("تعذر تحديث وقت المباراة: "+error.message);
+          timeEdit.disabled=false;
+        }
+      });
+      actions.append(timeEdit);
       actions.append(crestEdit);
       actions.append(edit);
     }
