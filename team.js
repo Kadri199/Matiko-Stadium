@@ -42,7 +42,7 @@ function challengeCard(item, own=false) {
     });
     actions.append(btn);
   }
-  if(own){
+  if(own && d.teamUid===currentUser.uid){
     const del=document.createElement("button");del.className="btn btn-outline";del.textContent="حذف التحدي";
     del.addEventListener("click",async()=>{
       if(!confirm("هل تريد حذف هذا التحدي؟"))return;
