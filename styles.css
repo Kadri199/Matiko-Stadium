@@ -4,8 +4,8 @@
 /* Keep the team logout icon hidden until a team is authenticated. */
 .team-header-account.hidden{display:none}
 
-/* Booking slot colors: red while available, green only after owner approval. */
-.slot{background:#ffe1df;border-color:#efaaa4;color:#a52f28}.slot small{color:#9b514b}.slot:hover{border-color:#c94c43}.slot.booked-slot{background:#b7edc9;border-color:#65bd83;color:#14613c;cursor:not-allowed}.slot.booked-slot small{color:#286d4a}
+/* Booking slot colors: green while available, red after owner approval. */
+.slot{background:#b7edc9;border-color:#65bd83;color:#14613c}.slot small{color:#286d4a}.slot:hover{border-color:#16845d}.slot.booked-slot{background:#ffe1df;border-color:#efaaa4;color:#a52f28;cursor:pointer}.slot.booked-slot small{color:#9b514b}
 
 
 /* Homepage news: newest first, displayed as a permanent section above the footer. */
