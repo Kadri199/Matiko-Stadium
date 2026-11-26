@@ -6,7 +6,7 @@ import {
 const scoreCollection = game => collection(db, "gameScores", game, "entries");
 const games = {
   penalty: { label: "ضربات الجزاء", max: 5 },
-  crossbar: { label: "العارضة العنيدة", max: 5 }
+  crossbar: { label: "قناص العارضة", max: 5 }
 };
 const $ = id => document.getElementById(id);
 const state = {
