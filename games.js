@@ -3,15 +3,15 @@ import {
   addDoc, collection, limit, onSnapshot, orderBy, query, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-const scoreCollection = collection(db, "gameScores");
+const scoreCollection = game => collection(db, "gameScores", game, "entries");
 const games = {
   penalty: { label: "ضربات الجزاء", max: 5 },
   crossbar: { label: "العارضة العنيدة", max: 5 }
 };
 const $ = id => document.getElementById(id);
 const state = {
-  penalty: { active:false, shot:0, score:0, busy:false },
-  crossbar: { active:false, shot:0, score:0, power:0, direction:1, timer:null, busy:false }
+  penalty: { active:false, shot:0, score:0, busy:false, playerName:"" },
+  crossbar: { active:false, shot:0, score:0, power:0, direction:1, timer:null, busy:false, playerName:"" }
 };
 
 function showStatus(game, message, type="") {
@@ -60,7 +60,7 @@ function renderTop(game, docs) {
   });
 }
 Object.keys(games).forEach(game => {
-  const scoresQuery = query(scoreCollection, orderBy("score", "desc"), limit(10));
+  const scoresQuery = query(scoreCollection(game), orderBy("score", "desc"), limit(10));
   onSnapshot(scoresQuery, snapshot => {
     const filtered = snapshot.docs.filter(item => item.data().game === game).slice(0,10);
     renderTop(game, filtered);
@@ -94,7 +94,7 @@ function startPenalty() {
   const name = safeName("penalty");
   if (!name) return;
   const s = state.penalty;
-  s.active = true; s.shot = 0; s.score = 0; s.busy = false;
+  s.active = true; s.shot = 0; s.score = 0; s.busy = false; s.playerName = name;
   updateScore("penalty");
   $("penaltyStart").disabled = true;
   showStatus("penalty", "اختر جهة التسديد: يسار أو وسط أو يمين.");
@@ -142,7 +142,7 @@ function startCrossbar() {
   if (!name) return;
   const s = state.crossbar;
   if (s.timer) clearInterval(s.timer);
-  s.active = true; s.shot = 0; s.score = 0; s.power = 0; s.direction = 1; s.busy = false;
+  s.active = true; s.shot = 0; s.score = 0; s.power = 0; s.direction = 1; s.busy = false; s.playerName = name;
   updateScore("crossbar");
   $("crossbarStart").disabled = true;
   $("crossbarHit").disabled = false;
