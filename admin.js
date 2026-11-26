@@ -80,6 +80,56 @@ function openScorersEditor(team1, team2, current1, current2) {
     fields[0].focus();
   });
 }
+const availableClubCrests = [["Real Madrid","https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"],["Barcelona","https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg"],["Manchester United","https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg"],["Liverpool","https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg"],["Manchester City","https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg"],["Arsenal","https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg"],["Chelsea","https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg"],["Tottenham","https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg"],["Bayern Munich","https://upload.wikimedia.org/wikipedia/en/1/1f/FC_Bayern_München_logo_%282017%29.svg"],["Borussia Dortmund","https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg"],["Paris Saint-Germain","https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg"],["Juventus","https://upload.wikimedia.org/wikipedia/commons/1/15/Juventus_FC_2017_logo.svg"],["Inter Milan","https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg"],["AC Milan","https://upload.wikimedia.org/wikipedia/commons/d/d0/Logo_of_AC_Milan.svg"],["Atletico Madrid","https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg"],["Ajax","https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg"]];
+function fillCrestSelect(select, selectedUrl="") {
+  if(!select) return;
+  select.innerHTML="";
+  const automatic=document.createElement("option");
+  automatic.value="";
+  automatic.textContent="اختيار تلقائي حسب اسم الفريق";
+  select.appendChild(automatic);
+  availableClubCrests.forEach(([name,url])=>{
+    const option=document.createElement("option");
+    option.value=url;option.textContent=name;
+    select.appendChild(option);
+  });
+  select.value=selectedUrl||"";
+}
+function openCrestsEditor(team1,team2,crest1="",crest2="") {
+  return new Promise(resolve=>{
+    const overlay=document.createElement("div");
+    overlay.style.cssText="position:fixed;inset:0;z-index:10000;background:#071b13a8;display:flex;align-items:center;justify-content:center;padding:16px";
+    const panel=document.createElement("section");
+    panel.dir="rtl";
+    panel.style.cssText="width:min(520px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:18px;padding:20px;box-shadow:0 20px 60px #0004;color:#18352b;font-family:Cairo,sans-serif";
+    const title=document.createElement("h2");title.textContent="اختيار شعاري الفريقين";title.style.cssText="font-size:18px;margin:0 0 14px";
+    panel.appendChild(title);
+    const selects=[];
+    [[team1,crest1],[team2,crest2]].forEach(([team,url])=>{
+      const label=document.createElement("label");
+      label.textContent="شعار "+(team||"الفريق");
+      label.style.cssText="display:block;font-size:13px;font-weight:800;margin:12px 0 6px";
+      const select=document.createElement("select");
+      select.style.cssText="width:100%;box-sizing:border-box;border:1px solid #cbd9d0;border-radius:10px;padding:12px;background:#fff;color:#18352b;font:15px Cairo,sans-serif";
+      fillCrestSelect(select,url);
+      const preview=document.createElement("img");
+      preview.alt="معاينة الشعار";
+      preview.style.cssText="display:block;width:64px;height:64px;object-fit:contain;margin:10px auto 14px";
+      const updatePreview=()=>{preview.src=select.value||"";preview.style.display=select.value?"block":"none";};
+      select.addEventListener("change",updatePreview);updatePreview();
+      panel.append(label,select,preview);selects.push(select);
+    });
+    const actions=document.createElement("div");actions.style.cssText="display:flex;gap:9px;margin-top:14px";
+    const cancel=document.createElement("button");cancel.type="button";cancel.textContent="إلغاء";cancel.style.cssText="flex:1;border:1px solid #dce6df;border-radius:10px;padding:11px;background:#f5f8f5;color:#18352b;font:700 13px Cairo,sans-serif";
+    const save=document.createElement("button");save.type="button";save.textContent="حفظ الشعارين";save.style.cssText="flex:1;border:0;border-radius:10px;padding:11px;background:#116149;color:#fff;font:800 13px Cairo,sans-serif";
+    actions.append(cancel,save);panel.appendChild(actions);overlay.appendChild(panel);document.body.appendChild(overlay);
+    let done=false;
+    const close=value=>{if(done)return;done=true;overlay.remove();resolve(value);};
+    cancel.addEventListener("click",()=>close(null));
+    save.addEventListener("click",()=>close({crest1:selects[0].value,crest2:selects[1].value}));
+    overlay.addEventListener("click",e=>{if(e.target===overlay)close(null);});
+  });
+}
 function renderRecords(target, docs, type) {
   const host=$(target); host.innerHTML="";
   if(!docs.length){host.innerHTML='<div class="empty-state">لا توجد بيانات منشورة بعد.</div>';return;}
@@ -124,6 +174,20 @@ function renderRecords(target, docs, type) {
           edit.disabled=false;
         }
       });
+      const crestEdit=document.createElement("button");
+      crestEdit.className="edit-btn";
+      crestEdit.textContent="تعديل الشعارين";
+      crestEdit.addEventListener("click",async()=>{
+        const chosen=await openCrestsEditor(d.team1||"الفريق الأول",d.team2||"الفريق الثاني",d.crest1||"",d.crest2||"");
+        if(!chosen)return;
+        crestEdit.disabled=true;
+        try{
+          await updateDoc(doc(db,"results",item.id),{crest1:chosen.crest1,crest2:chosen.crest2});
+          await loadAll();
+          message("resultMessage","تم تحديث شعاري الفريقين.");
+        }catch(error){alert("تعذر تحديث الشعارين: "+error.message);crestEdit.disabled=false;}
+      });
+      actions.append(crestEdit);
       actions.append(edit);
     }
     const del=document.createElement("button");del.className="danger-btn";del.textContent=type==="users"?"حذف الملف":type==="news"?"🗑 حذف الخبر":"🗑 حذف";
@@ -220,12 +284,15 @@ $("scheduleForm").addEventListener("submit",async e=>{
     message("scheduleMessage","تم حفظ جدول المواعيد.");
   }catch(err){message("scheduleMessage",err.message,true);}
 });
+fillCrestSelect($("resultCrest1"));
+fillCrestSelect($("resultCrest2"));
 $("resultForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!ownerReady)return;
   try{
     await addDoc(collection(db,"results"),{
       date:$("matchDate").value,team1:$("resultTeam1").value.trim(),score1:Number($("score1").value),
       team2:$("resultTeam2").value.trim(),score2:Number($("score2").value),
+      crest1:$("resultCrest1").value,crest2:$("resultCrest2").value,
       scorers1:parseScorers($("scorers1").value),scorers2:parseScorers($("scorers2").value),
       createdAt:serverTimestamp()
     });
