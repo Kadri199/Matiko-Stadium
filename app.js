@@ -249,7 +249,8 @@ function renderHomepageResults(snapshot) {
     date.className = "broadcast-date";
     if (item.date) {
       const parsed = new Date(item.date + "T00:00:00");
-      date.textContent = Number.isNaN(parsed.getTime()) ? item.date : parsed.toLocaleDateString("ar-DZ", { day: "numeric", month: "long", year: "numeric" });
+      const dateLabel = Number.isNaN(parsed.getTime()) ? item.date : parsed.toLocaleDateString("ar-DZ", { day: "numeric", month: "long", year: "numeric" });
+      date.textContent = dateLabel + (item.time ? " • " + item.time : "");
     } else {
       date.textContent = "نتيجة مباراة";
     }
