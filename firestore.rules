@@ -61,7 +61,8 @@ service cloud.firestore {
           "teamUid", "teamEmail", "teamName", "opponentName",
           "day", "time", "note", "status", "createdAt"
         ]);
-      allow read: if isOwner() || (signedIn() && resource.data.teamUid == request.auth.uid);
+      // Public can read approved match details for the homepage popup; pending requests remain private.
+      allow read: if isOwner() || resource.data.status == "approved" || (signedIn() && resource.data.teamUid == request.auth.uid);
       allow update, delete: if isOwner();
     }
 
