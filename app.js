@@ -449,6 +449,27 @@ onSnapshot(collection(db, "news"), renderHomepageNews, error => {
   $("newsList").innerHTML = '<article class="news-placeholder"><span>📰</span><h3>تعذر تحميل الأخبار</h3><p>يرجى تحديث الصفحة لاحقاً.</p></article>';
 });
 
+onSnapshot(doc(db, "settings", "about"), snapshot => {
+  if (!snapshot.exists()) return;
+  const data = snapshot.data();
+  const description = $("aboutDescriptionHome");
+  const contact = $("aboutContactHome");
+  if (description && data.description) description.textContent = data.description;
+  if (contact) {
+    contact.replaceChildren();
+    [["📍", data.location], ["☎", data.phone]].forEach(([icon, value]) => {
+      if (!value || !String(value).trim()) return;
+      const item = document.createElement("span");
+      item.className = "about-contact-item";
+      item.textContent = icon + " " + String(value).trim();
+      contact.appendChild(item);
+    });
+    contact.classList.toggle("hidden", !contact.children.length);
+  }
+}, error => {
+  console.error("Could not load stadium information:", error);
+});
+
 onSnapshot(query(collection(db, "challenges"), where("status", "==", "open")), renderHomepageChallenges, error => {
   console.error("Could not load homepage challenges:", error);
   $("challengeList").innerHTML = '<article class="empty-card"><h3>تعذر تحميل التحديات</h3><p>يرجى تحديث الصفحة لاحقاً.</p></article>';
