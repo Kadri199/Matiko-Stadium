@@ -1,7 +1,7 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import {
-  collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, updateDoc, serverTimestamp, arrayUnion
+  collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, updateDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const OWNER_UID = "hU0pqkyVYMYhBQ5GBAPHcHemph23";
@@ -9,6 +9,7 @@ const OWNER_EMAIL = "afterdark706@gmail.com";
 const $ = id => document.getElementById(id);
 const timesDefault = ["16:00 – 17:00","17:00 – 18:00","18:00 – 19:00","19:00 – 20:00","20:00 – 21:00","21:00 – 22:00"];
 let ownerReady = false;
+const normalizeBookingValue = value => String(value || "").trim().replace(/[–—−]/g,"-").replace(/\s+/g,"");
 
 function message(id, text, error=false) {
   const el=$(id); el.textContent=text; el.style.color=error?"#a34d43":"#16704d";
@@ -64,16 +65,6 @@ async function loadBookings(){
   const host=$("bookingsAdminList");
   const snap=await getDocs(collection(db,"bookings"));
   const docs=snap.docs.sort((a,b)=>(b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0));
-  // Repair the public schedule list from every booking already approved by the owner.
-  const approvedSlotKeys=[...new Set(docs
-    .filter(item=>item.data().status==="approved"&&item.data().day&&item.data().time)
-    .map(item=>`${item.data().day}|${item.data().time}`))];
-  if(approvedSlotKeys.length){
-    await setDoc(doc(db,"settings","schedule"),{
-      bookedSlots:arrayUnion(...approvedSlotKeys),
-      updatedAt:serverTimestamp()
-    },{merge:true});
-  }
   host.innerHTML="";
   if(!docs.length){host.innerHTML='<div class="empty-state">لا توجد طلبات حجز حتى الآن.</div>';return;}
   docs.forEach(item=>{
@@ -92,14 +83,8 @@ async function loadBookings(){
           try{
             if(status==="approved"){
               const allBookings=await getDocs(collection(db,"bookings"));
-              const conflict=allBookings.docs.some(x=>x.id!==item.id&&x.data().day===d.day&&x.data().time===d.time&&x.data().status==="approved");
+              const conflict=allBookings.docs.some(x=>x.id!==item.id&&normalizeBookingValue(x.data().day)===normalizeBookingValue(d.day)&&normalizeBookingValue(x.data().time)===normalizeBookingValue(d.time)&&x.data().status==="approved");
               if(conflict) throw new Error("هذا الموعد محجوز بالفعل. اختر طلباً آخر.");
-            }
-            if(status==="approved"){
-              await setDoc(doc(db,"settings","schedule"),{
-                bookedSlots:arrayUnion(`${d.day}|${d.time}`),
-                updatedAt:serverTimestamp()
-              },{merge:true});
             }
             await updateDoc(doc(db,"bookings",item.id),{status,reviewedAt:serverTimestamp()});
             await loadBookings();
