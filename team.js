@@ -80,18 +80,41 @@ async function loadChallenges(){
   }catch(e){showMessage("pageMessage","تعذر تحميل التحديات: "+e.message,true);}
 }
 $("challengeForm").addEventListener("submit",async e=>{
-  e.preventDefault();if(!ready)return;
-  const btn=$("publishBtn");btn.disabled=true;
+  e.preventDefault();
+  const btn=$("publishBtn");
+  if(!ready || !currentUser || !profile){
+    showMessage("challengeMessage","يرجى الانتظار حتى يكتمل تحميل بيانات الفريق، ثم حاول مجدداً.",true);
+    return;
+  }
+  const day=$("challengeDay").value;
+  const time=$("challengeTime").value;
+  if(!day || !time){
+    showMessage("challengeMessage","يرجى اختيار اليوم والساعة أولاً.",true);
+    return;
+  }
+  btn.disabled=true;
+  btn.textContent="جارٍ نشر التحدي...";
+  showMessage("challengeMessage","جارٍ إرسال التحدي...",false);
   try{
     await addDoc(collection(db,"challenges"),{
-      teamUid:currentUser.uid,teamName:profile.fullName,
-      day:$("challengeDay").value,time:$("challengeTime").value,
-      note:$("challengeNote").value.trim(),status:"open",createdAt:serverTimestamp()
+      teamUid:currentUser.uid,
+      teamName:profile.fullName || "فريق",
+      day,
+      time,
+      note:$("challengeNote").value.trim(),
+      status:"open",
+      createdAt:serverTimestamp()
     });
-    e.target.reset();showMessage("challengeMessage","تم نشر التحدي بنجاح.");
+    e.target.reset();
+    showMessage("challengeMessage","تم نشر التحدي بنجاح، وأصبح ظاهراً للفرق الأخرى.",false);
     await loadChallenges();
-  }catch(err){showMessage("challengeMessage","تعذر نشر التحدي: "+err.message,true);}
-  finally{btn.disabled=false;}
+  }catch(err){
+    console.error("Challenge publishing failed:",err);
+    showMessage("challengeMessage","تعذر نشر التحدي: "+(err.message || "خطأ غير معروف"),true);
+  }finally{
+    btn.disabled=false;
+    btn.textContent="＋ نشر تحدي";
+  }
 });
 $("refreshBtn").addEventListener("click",loadChallenges);
 $("logoutBtn").addEventListener("click",async()=>{await signOut(auth);location.href="index.html";});
