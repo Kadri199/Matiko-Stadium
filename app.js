@@ -97,7 +97,8 @@ $("authForm").addEventListener("submit", async e => {
           createdAt: serverTimestamp()
         });
       } catch (profileError) {
-        console.warn("Could not save profile yet:", profileError);
+        await signOut(auth);
+        throw new Error("تم إنشاء حساب الدخول، لكن تعذر إنشاء ملف الفريق في قاعدة البيانات: " + profileError.message);
       }
       showMessage("formMessage", "تم إنشاء الحساب بنجاح. يمكنك الآن تسجيل الدخول.", false);
       authMode = "login";
@@ -124,6 +125,13 @@ $("authForm").addEventListener("submit", async e => {
         await signOut(auth);
         throw new Error("يرجى استخدام زر دخول الإدارة لهذا الحساب.");
       }
+      const teamProfile = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js").then(({getDoc}) => getDoc(doc(db, "users", credential.user.uid)));
+      if (!teamProfile.exists() || teamProfile.data().role !== "team") {
+        await signOut(auth);
+        throw new Error("لم يتم العثور على ملف فريق صالح لهذا الحساب. يرجى التواصل مع إدارة الملعب.");
+      }
+      location.href = "team.html";
+      return;
       $("modalBackdrop").classList.remove("open");
       $("loginOpen").textContent = "تسجيل الخروج";
       $("loginOpen").onclick = async () => { await signOut(auth); };
