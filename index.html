@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b3d2e">
+  <title>الملعب الجواري أولاد مبارك</title>
+  <meta name="description" content="الموقع الرسمي للملعب الجواري أولاد مبارك — التحديات، حجز المواعيد، نتائج المباريات وأخبار الملعب.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-wrap">
+    <a class="brand" href="#home"><span class="brand-mark">⚽</span><span><strong>ملعب أولاد مبارك</strong><small>الملعب الجواري</small></span></a>
+    <button class="menu-toggle" id="menuToggle" aria-label="فتح القائمة">☰</button>
+    <nav id="mainNav">
+      <a href="#schedule">الحجوزات</a><a href="#challenges">التحديات</a><a href="#results">النتائج</a><a href="#news">الأخبار</a><a href="#about">عن الملعب</a>
+    </nav>
+    <button class="btn btn-light" id="loginOpen">تسجيل الدخول</button>
+  </div>
+</header>
+<main id="home">
+  <section class="hero">
+    <div class="hero-pattern"></div>
+    <div class="container hero-content">
+      <span class="eyebrow">مرحباً بكم في ملعبنا</span>
+      <h1>الملعب الجواري<br><em>أولاد مبارك</em></h1>
+      <p>مكان المنافسة، الروح الرياضية، وصناعة أجمل اللحظات.</p>
+      <div class="hero-actions"><a class="btn btn-lime" href="#schedule">احجز موعداً</a><a class="btn btn-outline" href="#challenges">اكتشف التحديات</a></div>
+      <div class="hero-note"><span class="live-dot"></span> المواعيد اليومية من 16:00 إلى 22:00</div>
+    </div>
+    <div class="hero-ball">⚽</div>
+  </section>
+
+  <section class="section" id="challenges">
+    <div class="container">
+      <div class="section-heading"><div><span class="eyebrow green">التحدي يبدأ هنا</span><h2>تحديات مفتوحة</h2><p>ابحث عن فريق يواجه فريقك أو انشر تحدياً جديداً.</p></div><button class="btn btn-primary" id="publishChallenge">＋ نشر تحدي</button></div>
+      <div class="cards-grid" id="challengeList">
+        <article class="challenge-card"><div class="card-top"><span class="tag">تحدٍ مفتوح</span><span class="muted">مثال توضيحي</span></div><h3>نسور أولاد مبارك</h3><div class="match-meta"><span>📅 السبت</span><span>🕕 18:00</span></div><p>نبحث عن فريق قوي لمباراة حماسية.</p><button class="btn btn-outline-dark" disabled>قبول التحدي</button></article>
+        <article class="empty-card"><span>🏆</span><h3>التحدي القادم قد يكون تحديك!</h3><p>سجّل الدخول وانشر تحدياً لفريقك.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-soft" id="schedule">
+    <div class="container">
+      <div class="section-heading"><div><span class="eyebrow green">نظّم مباراتك</span><h2>جدول المواعيد</h2><p>اختر اليوم ثم اطّلع على الفترات المتاحة.</p></div></div>
+      <div class="schedule-toolbar"><label for="daySelect">اليوم</label><select id="daySelect"><option>السبت</option><option>الأحد</option><option>الإثنين</option><option>الثلاثاء</option><option>الأربعاء</option><option>الخميس</option><option>الجمعة</option></select><span class="legend"><i class="available"></i> متاح <i class="booked"></i> محجوز</span></div>
+      <div class="slots-grid" id="slotsGrid"></div>
+      <p class="hint">إرسال طلب الحجز لا يعني تأكيده. يصبح الموعد محجوزاً بعد موافقة إدارة الملعب.</p>
+    </div>
+  </section>
+
+  <section class="section" id="results">
+    <div class="container">
+      <div class="section-heading"><div><span class="eyebrow green">حصيلة المنافسة</span><h2>نتائج المباريات</h2><p>آخر النتائج المنشورة في الملعب.</p></div></div>
+      <div class="results-grid" id="resultsList"><article class="result-card"><div class="result-date">ستظهر النتائج هنا</div><div class="score-row"><strong>الفريق الأول</strong><b>— : —</b><strong>الفريق الثاني</strong></div><div class="scorers"><div><b>مسجلو الفريق الأول</b><p>لم تُنشر نتائج بعد</p></div><div><b>مسجلو الفريق الثاني</b><p>لم تُنشر نتائج بعد</p></div></div></article></div>
+    </div>
+  </section>
+
+  <section class="section section-soft" id="news">
+    <div class="container">
+      <div class="section-heading"><div><span class="eyebrow green">ابقَ على اطلاع</span><h2>أخبار الملعب</h2><p>آخر المستجدات والإعلانات.</p></div></div>
+      <div class="news-grid" id="newsList"><article class="news-placeholder"><span>📰</span><h3>أخبار الملعب قريباً</h3><p>ستظهر هنا الإعلانات والأخبار التي تنشرها إدارة الملعب.</p></article></div>
+    </div>
+  </section>
+
+  <section class="section about-section" id="about">
+    <div class="container about-grid"><div><span class="eyebrow green">من نحن</span><h2>عن الملعب</h2><p>الملعب الجواري أولاد مبارك فضاء رياضي يجمع محبي كرة القدم في أجواء من التنافس والاحترام والروح الرياضية.</p><div class="about-points"><span>✓ تنظيم المواعيد</span><span>✓ تحديات بين الفرق</span><span>✓ نتائج وأخبار المباريات</span></div></div><div class="about-visual"><div class="pitch-lines"></div><span>⚽</span><b>نلعب بروح الفريق</b></div></div>
+  </section>
+</main>
+<footer><div class="container footer-inner"><div class="brand"><span class="brand-mark">⚽</span><strong>الملعب الجواري أولاد مبارك</strong></div><span>© <span id="year"></span> جميع الحقوق محفوظة</span><button class="footer-owner" id="ownerLogin">دخول الإدارة</button></div></footer>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal-close" id="modalClose" aria-label="إغلاق">×</button><h2 id="modalTitle">تسجيل الدخول</h2><p id="modalDescription">أدخل بيانات حسابك للمتابعة.</p>
+    <form id="authForm"><label>البريد الإلكتروني<input type="email" id="email" required autocomplete="email"></label><label>كلمة المرور<input type="password" id="password" required autocomplete="current-password"></label><div id="nameField" class="hidden"><label>الاسم الكامل<input type="text" id="fullName"></label></div><button class="btn btn-primary full" type="submit" id="authSubmit">تسجيل الدخول</button></form>
+    <p class="modal-switch" id="authSwitch">ليس لديك حساب؟ <button type="button" id="registerSwitch">إنشاء حساب</button></p><p class="form-message" id="formMessage" role="status"></p>
+  </section>
+</div>
+<div class="modal-backdrop" id="requestBackdrop"><section class="modal"><button class="modal-close" id="requestClose">×</button><h2 id="requestTitle">طلب حجز موعد</h2><form id="requestForm"><label>اسم الفريق الأول<input id="teamOne" required></label><label>اسم الفريق الثاني<input id="teamTwo" required></label><label>ملاحظة (اختياري)<textarea id="requestNote" rows="3"></textarea></label><button class="btn btn-primary full">إرسال الطلب</button></form><p class="form-message" id="requestMessage"></p></section></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
