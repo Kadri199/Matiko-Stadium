@@ -6,3 +6,13 @@
 
 /* Booking slot colors: red while available, green only after owner approval. */
 .slot{background:#ffe1df;border-color:#efaaa4;color:#a52f28}.slot small{color:#9b514b}.slot:hover{border-color:#c94c43}.slot.booked-slot{background:#b7edc9;border-color:#65bd83;color:#14613c;cursor:not-allowed}.slot.booked-slot small{color:#286d4a}
+
+
+/* Homepage news: newest first, displayed as a permanent section above the footer. */
+.news-card{background:#fff;border:1px solid var(--line);border-radius:19px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.news-image{display:block;width:100%;height:210px;object-fit:cover;background:var(--soft)}
+.news-content{padding:20px}
+.news-content h3{font-size:17px;margin:0 0 9px;color:var(--ink)}
+.news-content p{font-size:13px;color:var(--muted);white-space:pre-wrap;margin:0}
+.news-date{display:block;margin-top:13px;font-size:11px;color:#8a9a90}
+#news{scroll-margin-top:90px}
