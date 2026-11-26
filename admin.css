@@ -4,3 +4,5 @@
 .news-upload-preview{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px;border:1px dashed var(--line);border-radius:12px;background:var(--soft)}
 .news-upload-preview img{width:min(100%,260px);max-height:190px;object-fit:contain;border-radius:9px;background:#fff}
 .form-card .hint{font-size:11px;color:var(--muted)}
+
+.edit-btn{border:1px solid #c8dfd0;color:#14613c;background:#f1faf4;border-radius:8px;padding:5px 10px;cursor:pointer;font-size:11px}.edit-btn:hover{background:#e1f3e7}.edit-btn:disabled{opacity:.6;cursor:wait}
