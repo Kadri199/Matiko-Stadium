@@ -321,7 +321,7 @@ function renderHomepageResults(snapshot) {
         crest.alt = "شعار " + name;
         crest.loading = "lazy";
         crest.referrerPolicy = "no-referrer";
-        crest.onerror = () => { crest.replaceWith(makeNeutralCrest()); };
+        crest.onerror = () => { crest.replaceWith(makeFallbackCrest()); };
         team.appendChild(crest);
       } else if (country) {
         const flag = document.createElement("img");
@@ -329,21 +329,23 @@ function renderHomepageResults(snapshot) {
         flag.src = "https://flagcdn.com/" + country.code + ".svg";
         flag.alt = "علم " + name;
         flag.loading = "lazy";
-        flag.onerror = () => { flag.replaceWith(makeNeutralCrest()); };
+        flag.onerror = () => { flag.replaceWith(makeFallbackCrest()); };
         team.appendChild(flag);
       } else {
-        team.appendChild(makeNeutralCrest());
+        team.appendChild(makeFallbackCrest());
       }
       const label = document.createElement("strong");
       label.textContent = name || (side === "home" ? "الفريق الأول" : "الفريق الثاني");
       team.appendChild(label);
       return team;
     };
-    const makeNeutralCrest = () => {
-      const crest = document.createElement("span");
-      crest.className = "broadcast-crest broadcast-neutral-crest";
-      crest.textContent = "⚽";
-      crest.setAttribute("aria-label","رمز كرة قدم");
+    const makeFallbackCrest = () => {
+      const crest = document.createElement("img");
+      crest.className = "broadcast-crest-img";
+      crest.src = "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg";
+      crest.alt = "شعار نادٍ معروف";
+      crest.loading = "lazy";
+      crest.referrerPolicy = "no-referrer";
       return crest;
     };
     const team1 = makeTeam(item.team1, "home");
