@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b3d2e">
+  <title>لوحة إدارة الملعب | أولاد مبارك</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <a class="brand" href="index.html"><span class="ball">⚽</span><span><b>إدارة ملعب أولاد مبارك</b><small>لوحة تحكم صاحب الملعب</small></span></a>
+    <div class="head-actions"><span id="ownerEmail"></span><button id="logoutBtn" class="btn btn-ghost">تسجيل الخروج</button></div>
+  </header>
+  <main class="admin-shell">
+    <aside class="sidebar">
+      <div class="side-title">القائمة الرئيسية</div>
+      <button class="nav-item active" data-panel="overview">⌂ <span>نظرة عامة</span></button>
+      <button class="nav-item" data-panel="schedule">◷ <span>جدول المواعيد</span></button>
+      <button class="nav-item" data-panel="bookings">▣ <span>طلبات الحجز</span></button>
+      <button class="nav-item" data-panel="challenges">⚑ <span>التحديات</span></button>
+      <button class="nav-item" data-panel="results">🏆 <span>نتائج المباريات</span></button>
+      <button class="nav-item" data-panel="news">▤ <span>أخبار الملعب</span></button>
+      <button class="nav-item" data-panel="users">♙ <span>حسابات الفرق</span></button>
+      <button class="nav-item" data-panel="about">ⓘ <span>معلومات الملعب</span></button>
+      <a class="back-link" href="index.html">← العودة إلى الموقع</a>
+    </aside>
+    <section class="workspace">
+      <div id="accessMessage" class="notice">جارٍ التحقق من صلاحية الدخول...</div>
+      <div id="dashboard" class="hidden">
+        <section class="panel active" id="panel-overview">
+          <div class="page-heading"><div><span class="eyebrow">مرحباً بك</span><h1>لوحة التحكم</h1><p>من هنا يمكنك إدارة محتوى الملعب ومتابعة نشاطه.</p></div><span class="secure">🔒 دخول المالك فقط</span></div>
+          <div class="stats-grid">
+            <article class="stat-card"><span>حسابات الفرق</span><b id="userCount">—</b></article>
+            <article class="stat-card"><span>النتائج المنشورة</span><b id="resultCount">—</b></article>
+            <article class="stat-card"><span>الأخبار المنشورة</span><b id="newsCount">—</b></article>
+          </div>
+          <div class="welcome-card"><h2>إدارة الملعب الجواري أولاد مبارك</h2><p>ابدأ بإضافة النتائج والأخبار وتحديث معلومات الملعب. ستُفعّل إدارة الحجوزات والتحديات بعد تجهيز آلية الطلبات والموافقة.</p></div>
+        </section>
+        <section class="panel" id="panel-schedule">
+          <div class="page-heading"><div><h1>جدول المواعيد</h1><p>تحديد الفترات اليومية التي تظهر للفرق.</p></div></div>
+          <form id="scheduleForm" class="form-card">
+            <label>الفترات اليومية (كل فترة في سطر مستقل)<textarea id="scheduleTimes" rows="7" required></textarea></label>
+            <label class="check-label"><input type="checkbox" id="scheduleEnabled" checked> إظهار جدول المواعيد للزوار</label>
+            <button class="btn btn-primary">حفظ جدول المواعيد</button><p class="message" id="scheduleMessage"></p>
+          </form>
+        </section>
+        <section class="panel" id="panel-bookings">
+          <div class="page-heading"><div><h1>طلبات الحجز</h1><p>إدارة طلبات الفرق والموافقة عليها.</p></div></div>
+          <div class="empty-state">سيتم تفعيل هذه الصفحة بعد إضافة نظام طلب الحجز الآمن ومنع حجز الموعد مرتين.</div>
+        </section>
+        <section class="panel" id="panel-challenges">
+          <div class="page-heading"><div><h1>التحديات</h1><p>متابعة التحديات المنشورة بين الفرق.</p></div></div>
+          <div class="empty-state">سيتم تفعيل إدارة التحديات والمحادثات الخاصة بعد تجهيز صلاحيات الفرق والمشاركين.</div>
+        </section>
+        <section class="panel" id="panel-results">
+          <div class="page-heading"><div><h1>نتائج المباريات</h1><p>أضف نتيجة المباراة وأسماء مسجلي الأهداف لكل فريق.</p></div></div>
+          <form id="resultForm" class="form-card">
+            <div class="form-grid"><label>تاريخ المباراة<input id="matchDate" type="date" required></label><label>الفريق الأول<input id="resultTeam1" required></label><label>نتيجة الفريق الأول<input id="score1" type="number" min="0" required></label><label>الفريق الثاني<input id="resultTeam2" required></label><label>نتيجة الفريق الثاني<input id="score2" type="number" min="0" required></label></div>
+            <div class="form-grid"><label>مسجلو الفريق الأول (اسم اللاعب - عدد الأهداف، كل لاعب في سطر)<textarea id="scorers1" rows="4" placeholder="محمد - 2&#10;أمين - 1"></textarea></label><label>مسجلو الفريق الثاني (اسم اللاعب - عدد الأهداف، كل لاعب في سطر)<textarea id="scorers2" rows="4" placeholder="يوسف - 1"></textarea></label></div>
+            <button class="btn btn-primary">نشر النتيجة</button><p class="message" id="resultMessage"></p>
+          </form>
+          <div id="resultsAdminList" class="records-list"></div>
+        </section>
+        <section class="panel" id="panel-news">
+          <div class="page-heading"><div><h1>أخبار الملعب</h1><p>انشر إعلاناً أو خبراً مع صورة اختيارية. استخدم رابط صورة عامة؛ لا نستخدم Firebase Storage.</p></div></div>
+          <form id="newsForm" class="form-card">
+            <label>عنوان الخبر<input id="newsTitle" required maxlength="120"></label>
+            <label>نص الخبر<textarea id="newsBody" rows="5" required></textarea></label>
+            <label>رابط الصورة (اختياري)<input id="newsImage" type="url" placeholder="https://..."></label>
+            <button class="btn btn-primary">نشر الخبر</button><p class="message" id="newsMessage"></p>
+          </form>
+          <div id="newsAdminList" class="records-list"></div>
+        </section>
+        <section class="panel" id="panel-users">
+          <div class="page-heading"><div><h1>حسابات الفرق</h1><p>عرض ملفات الفرق المسجلة. حذف ملف هنا لا يحذف حساب تسجيل الدخول نفسه.</p></div></div>
+          <div id="usersAdminList" class="records-list"></div>
+        </section>
+        <section class="panel" id="panel-about">
+          <div class="page-heading"><div><h1>معلومات الملعب</h1><p>تحديث وصف الملعب ومعلومات التواصل.</p></div></div>
+          <form id="aboutForm" class="form-card">
+            <label>وصف الملعب<textarea id="aboutDescription" rows="5" required></textarea></label>
+            <div class="form-grid"><label>الموقع<input id="aboutLocation"></label><label>رقم الهاتف<input id="aboutPhone" type="tel"></label></div>
+            <button class="btn btn-primary">حفظ المعلومات</button><p class="message" id="aboutMessage"></p>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
