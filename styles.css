@@ -47,3 +47,35 @@
 /* National flags are displayed as real flags; unknown teams use one neutral football icon. */
 .broadcast-country-flag{width:66px;height:46px;object-fit:contain;padding:3px;border-radius:9px}
 .broadcast-neutral-crest{font-size:28px;background:linear-gradient(145deg,#e8edf2,#b8c5d1);color:#18354b;border:2px solid #ffffff70}
+
+
+/* Mobile: keep the three main navigation actions on one horizontal line. */
+@media(max-width:760px){
+  .site-header nav.open{
+    display:flex;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    align-items:center;
+    gap:18px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    white-space:nowrap;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .site-header nav.open::-webkit-scrollbar{display:none}
+  .site-header nav.open a{flex:0 0 auto;white-space:nowrap;padding:7px 0}
+  .hero-actions{
+    display:flex;
+    flex-wrap:nowrap;
+    gap:8px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    white-space:nowrap;
+    padding:2px 0 8px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .hero-actions::-webkit-scrollbar{display:none}
+  .hero-actions .btn{flex:0 0 auto;white-space:nowrap;padding:9px 13px;font-size:12px}
+}
