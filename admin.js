@@ -188,14 +188,41 @@ $("clearNewsImage").addEventListener("click",()=>{
   newsPreviewUrl="";
 });
 async function prepareNewsImage(file){
-  const bitmap=await createImageBitmap(file);
-  const maxSide=1600,scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
-  const canvas=document.createElement("canvas");
-  canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);
-  const ctx=canvas.getContext("2d");
-  ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
-  const blob=await new Promise((resolve,reject)=>canvas.toBlob(result=>result?resolve(result):reject(new Error("تعذر تجهيز الصورة.")),"image/jpeg",0.82));
-  return new File([blob],(file.name.replace(/\.[^.]+$/,"")||"news-photo")+".jpg",{type:"image/jpeg"});
+  let source,sourceWidth,sourceHeight,releaseSource=()=>{};
+  try{
+    if(typeof createImageBitmap==="function"){
+      try{
+        source=await createImageBitmap(file);
+        sourceWidth=source.width;sourceHeight=source.height;
+        releaseSource=()=>source.close?.();
+      }catch(_){}
+    }
+    if(!source){
+      const objectUrl=URL.createObjectURL(file);
+      const img=new Image();
+      try{
+        await new Promise((resolve,reject)=>{
+          img.onload=resolve;
+          img.onerror=()=>reject(new Error("تعذر قراءة الصورة. اختر صورة بصيغة JPG أو PNG أو WebP."));
+          img.src=objectUrl;
+        });
+        source=img;sourceWidth=img.naturalWidth;sourceHeight=img.naturalHeight;
+        releaseSource=()=>URL.revokeObjectURL(objectUrl);
+      }catch(err){
+        URL.revokeObjectURL(objectUrl);
+        throw err;
+      }
+    }
+    if(!sourceWidth||!sourceHeight)throw new Error("ملف الصورة غير صالح أو أن صيغة الصورة غير مدعومة. اختر JPG أو PNG أو WebP.");
+    const maxSide=1600,scale=Math.min(1,maxSide/Math.max(sourceWidth,sourceHeight));
+    const canvas=document.createElement("canvas");
+    canvas.width=Math.max(1,Math.round(sourceWidth*scale));canvas.height=Math.max(1,Math.round(sourceHeight*scale));
+    const ctx=canvas.getContext("2d");
+    if(!ctx)throw new Error("تعذر تجهيز الصورة على هذا الجهاز.");
+    ctx.drawImage(source,0,0,canvas.width,canvas.height);
+    const blob=await new Promise((resolve,reject)=>canvas.toBlob(result=>result?resolve(result):reject(new Error("تعذر تحويل الصورة. جرّب صورة أخرى بصيغة JPG أو PNG.")),"image/jpeg",0.82));
+    return new File([blob],(file.name.replace(/\.[^.]+$/,"")||"news-photo")+".jpg",{type:"image/jpeg"});
+  }finally{releaseSource();}
 }
 async function uploadNewsImage(file){
   const image=await prepareNewsImage(file);
