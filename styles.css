@@ -32,3 +32,14 @@
 
 /* Homepage result deletion is shown only to the authenticated owner. */
 .result-delete-btn{display:block;margin:18px 0 0 auto;border:1px solid #efc3bf;border-radius:10px;background:#fff5f4;color:#a52f28;padding:7px 13px;font:700 12px "Cairo",sans-serif;cursor:pointer;transition:.2s}.result-delete-btn:hover{background:#ffe4e1;border-color:#e9a29b}.result-delete-btn:disabled{opacity:.65;cursor:wait}
+
+/* Real club crests and stable random fallback shields on broadcast scorecards. */
+.broadcast-crest-img{width:58px;height:58px;object-fit:contain;display:block;filter:drop-shadow(0 5px 8px #0005);background:#fff;border:2px solid #ffffff55;border-radius:14px;padding:5px}
+.broadcast-crest-random{font-size:27px;background:linear-gradient(145deg,#d7e8f1,#7294a8);color:#102b3d;border:2px solid #ffffff55}
+.broadcast-crest-random.crest-style-1{background:linear-gradient(145deg,#f2d58d,#b87931);color:#38210d}
+.broadcast-crest-random.crest-style-2{background:linear-gradient(145deg,#d9d4f5,#7770b7);color:#211d50}
+.broadcast-crest-random.crest-style-3{background:linear-gradient(145deg,#b9e7ce,#438b69);color:#103d2c}
+.broadcast-goal-count{font-size:10px;color:#d5f59a;white-space:nowrap}
+.broadcast-hattrick{font-size:9px;font-weight:900;color:#071b2b;background:#d5f59a;border-radius:20px;padding:1px 6px;white-space:nowrap}
+.broadcast-scorer{flex-wrap:wrap}
+@media(max-width:760px){.broadcast-crest-img{width:49px;height:49px;padding:4px}}
