@@ -277,11 +277,43 @@ function renderHomepageResults(snapshot) {
     const normalizeClubName = value => String(value || "").toLowerCase().normalize("NFKD")
       .replace(/[\u064B-\u065F\u0670ـ]/g,"").replace(/[أإآٱ]/g,"ا")
       .replace(/[^a-z0-9\u0600-\u06ff]/g,"");
+    const knownNationalTeams = [
+      {names:["italy","italia","italian national team","ايطاليا","إيطاليا"],code:"it"},
+      {names:["algeria","الجزائر"],code:"dz"},
+      {names:["france","فرنسا"],code:"fr"},
+      {names:["brazil","brasil","البرازيل"],code:"br"},
+      {names:["argentina","الارجنتين","الأرجنتين"],code:"ar"},
+      {names:["germany","المانيا","ألمانيا"],code:"de"},
+      {names:["spain","اسبانيا","إسبانيا"],code:"es"},
+      {names:["portugal","البرتغال"],code:"pt"},
+      {names:["england","انجلترا","إنجلترا"],code:"gb-eng"},
+      {names:["morocco","المغرب"],code:"ma"},
+      {names:["tunisia","تونس"],code:"tn"},
+      {names:["egypt","مصر"],code:"eg"},
+      {names:["saudi arabia","السعودية"],code:"sa"},
+      {names:["netherlands","holland","هولندا","هولندا"],code:"nl"},
+      {names:["belgium","بلجيكا"],code:"be"},
+      {names:["croatia","كرواتيا"],code:"hr"},
+      {names:["japan","اليابان"],code:"jp"},
+      {names:["south korea","كوريا الجنوبية"],code:"kr"},
+      {names:["senegal","السنغال"],code:"sn"},
+      {names:["nigeria","نيجيريا"],code:"ng"},
+      {names:["cameroon","الكاميرون"],code:"cm"},
+      {names:["ivory coast","cote d ivoire","ساحل العاج"],code:"ci"},
+      {names:["ghana","غانا"],code:"gh"},
+      {names:["united states","usa","امريكا","أمريكا"],code:"us"},
+      {names:["mexico","المكسيك"],code:"mx"},
+      {names:["uruguay","اوروغواي","أوروغواي"],code:"uy"},
+      {names:["switzerland","سويسرا"],code:"ch"},
+      {names:["turkey","turkiye","تركيا"],code:"tr"},
+      {names:["russia","روسيا"],code:"ru"}
+    ];
     const makeTeam = (name, side) => {
       const team = document.createElement("div");
       team.className = "broadcast-team broadcast-team-" + side;
       const cleanName = normalizeClubName(name);
       const club = knownClubCrests.find(entry => entry.names.some(alias => normalizeClubName(alias) === cleanName));
+      const country = knownNationalTeams.find(entry => entry.names.some(alias => normalizeClubName(alias) === cleanName));
       if (club) {
         const crest = document.createElement("img");
         crest.className = "broadcast-crest-img";
@@ -289,27 +321,29 @@ function renderHomepageResults(snapshot) {
         crest.alt = "شعار " + name;
         crest.loading = "lazy";
         crest.referrerPolicy = "no-referrer";
-        crest.onerror = () => {
-          crest.remove();
-          const fallback = makeRandomCrest(name, side);
-          team.insertBefore(fallback, team.firstChild);
-        };
+        crest.onerror = () => { crest.replaceWith(makeNeutralCrest()); };
         team.appendChild(crest);
+      } else if (country) {
+        const flag = document.createElement("img");
+        flag.className = "broadcast-crest-img broadcast-country-flag";
+        flag.src = "https://flagcdn.com/" + country.code + ".svg";
+        flag.alt = "علم " + name;
+        flag.loading = "lazy";
+        flag.onerror = () => { flag.replaceWith(makeNeutralCrest()); };
+        team.appendChild(flag);
       } else {
-        team.appendChild(makeRandomCrest(name, side));
+        team.appendChild(makeNeutralCrest());
       }
       const label = document.createElement("strong");
       label.textContent = name || (side === "home" ? "الفريق الأول" : "الفريق الثاني");
       team.appendChild(label);
       return team;
     };
-    const makeRandomCrest = (name, side) => {
-      const symbols = ["⚽","🦁","🛡️","⭐","👑","🐺","🦅","🔥"];
-      const hash = Array.from(String(name || side)).reduce((value,char) => ((value * 31) + char.charCodeAt(0)) >>> 0, 7);
+    const makeNeutralCrest = () => {
       const crest = document.createElement("span");
-      crest.className = "broadcast-crest broadcast-crest-random crest-style-" + (hash % 4);
-      crest.textContent = symbols[hash % symbols.length];
-      crest.setAttribute("aria-label","شعار فريق رمزي");
+      crest.className = "broadcast-crest broadcast-neutral-crest";
+      crest.textContent = "⚽";
+      crest.setAttribute("aria-label","رمز كرة قدم");
       return crest;
     };
     const team1 = makeTeam(item.team1, "home");
