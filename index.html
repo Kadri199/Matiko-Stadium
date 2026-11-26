@@ -54,6 +54,7 @@
       <div class="section-heading"><div><span class="eyebrow green">نظّم مباراتك</span><h2>جدول المواعيد</h2><p>اختر اليوم ثم اطّلع على الفترات المتاحة.</p></div></div>
       <div class="schedule-toolbar"><label for="daySelect">اليوم</label><select id="daySelect"><option>السبت</option><option>الأحد</option><option>الإثنين</option><option>الثلاثاء</option><option>الأربعاء</option><option>الخميس</option><option>الجمعة</option></select><span class="legend"><i class="available"></i> متاح <i class="booked"></i> محجوز</span></div>
       <div class="slots-grid" id="slotsGrid"></div>
+      <p id="bookingSyncStatus" class="booking-sync-status" aria-live="polite">جارٍ تحميل المواعيد المؤكدة...</p>
       <p class="hint">إرسال طلب الحجز لا يعني تأكيده. يصبح الموعد محجوزاً بعد موافقة إدارة الملعب.</p>
     </div>
   </section>
@@ -86,6 +87,6 @@
   </section>
 </div>
 <div class="modal-backdrop" id="requestBackdrop"><section class="modal"><button class="modal-close" id="requestClose">×</button><h2 id="requestTitle">طلب حجز موعد</h2><form id="requestForm"><label>اسم فريقك<input id="teamOne" required readonly placeholder="يُؤخذ من حساب الفريق"></label><label>اسم الفريق المنافس<input id="teamTwo" required></label><label>ملاحظة (اختياري)<textarea id="requestNote" rows="3"></textarea></label><button class="btn btn-primary full">إرسال الطلب</button></form><p class="form-message" id="requestMessage"></p></section></div>
-<script type="module" src="app.js"></script>
+<script type="module" src="app.js?v=booking-state-3"></script>
 </body>
 </html>
