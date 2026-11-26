@@ -233,37 +233,86 @@ function renderHomepageResults(snapshot) {
 
   items.forEach(item => {
     const card = document.createElement("article");
-    card.className = "result-card";
+    card.className = "result-card broadcast-card";
+
+    const top = document.createElement("div");
+    top.className = "broadcast-topline";
+    const brand = document.createElement("span");
+    brand.className = "broadcast-brand";
+    brand.textContent = "MATIKO SPORTS";
+    const status = document.createElement("span");
+    status.className = "broadcast-status";
+    status.textContent = "نهاية المباراة";
+    top.append(brand, status);
+
     const date = document.createElement("div");
-    date.className = "result-date";
+    date.className = "broadcast-date";
     if (item.date) {
       const parsed = new Date(item.date + "T00:00:00");
-      date.textContent = Number.isNaN(parsed.getTime()) ? item.date : parsed.toLocaleDateString("ar-DZ");
+      date.textContent = Number.isNaN(parsed.getTime()) ? item.date : parsed.toLocaleDateString("ar-DZ", { day: "numeric", month: "long", year: "numeric" });
     } else {
       date.textContent = "نتيجة مباراة";
     }
+
     const scoreRow = document.createElement("div");
-    scoreRow.className = "score-row";
-    const team1 = document.createElement("strong");
-    team1.textContent = item.team1 || "الفريق الأول";
-    const score = document.createElement("b");
-    score.textContent = String(item.score1 ?? "—") + " : " + String(item.score2 ?? "—");
-    const team2 = document.createElement("strong");
-    team2.textContent = item.team2 || "الفريق الثاني";
+    scoreRow.className = "broadcast-score-row";
+    const makeTeam = (name, side) => {
+      const team = document.createElement("div");
+      team.className = "broadcast-team broadcast-team-" + side;
+      const crest = document.createElement("span");
+      crest.className = "broadcast-crest";
+      crest.textContent = String(name || "؟").trim().slice(0, 1);
+      const label = document.createElement("strong");
+      label.textContent = name || (side === "home" ? "الفريق الأول" : "الفريق الثاني");
+      team.append(crest, label);
+      return team;
+    };
+    const team1 = makeTeam(item.team1, "home");
+    const score = document.createElement("div");
+    score.className = "broadcast-score";
+    const numbers = document.createElement("strong");
+    numbers.textContent = String(item.score1 ?? "—") + " : " + String(item.score2 ?? "—");
+    const fullTime = document.createElement("span");
+    fullTime.textContent = "FULL TIME";
+    score.append(numbers, fullTime);
+    const team2 = makeTeam(item.team2, "away");
     scoreRow.append(team1, score, team2);
 
+    const scorerTitle = document.createElement("div");
+    scorerTitle.className = "broadcast-scorers-title";
+    scorerTitle.textContent = "مسجلو الأهداف";
     const scorers = document.createElement("div");
-    scorers.className = "scorers";
-    const side1 = document.createElement("div");
-    const names1 = document.createElement("p");
-    names1.textContent = formatScorers(item.scorers1);
-    side1.append(names1);
-    const side2 = document.createElement("div");
-    const names2 = document.createElement("p");
-    names2.textContent = formatScorers(item.scorers2);
-    side2.append(names2);
-    scorers.append(side1, side2);
-    card.append(date, scoreRow, scorers);
+    scorers.className = "broadcast-scorers";
+    const addScorers = (list, side) => {
+      const column = document.createElement("div");
+      column.className = "broadcast-scorer-column broadcast-scorer-" + side;
+      const players = Array.isArray(list) ? list : [];
+      if (!players.length) {
+        const empty = document.createElement("span");
+        empty.className = "broadcast-no-scorers";
+        empty.textContent = "—";
+        column.append(empty);
+      } else {
+        players.forEach(player => {
+          const row = document.createElement("div");
+          row.className = "broadcast-scorer";
+          const name = document.createElement("span");
+          name.textContent = String(player.name || "").trim();
+          const goals = Number(player.goals || 0);
+          if (goals > 0) {
+            const count = document.createElement("b");
+            count.textContent = goals + " ⚽";
+            row.append(name, count);
+          } else {
+            row.append(name);
+          }
+          if (name.textContent) column.append(row);
+        });
+      }
+      return column;
+    };
+    scorers.append(addScorers(item.scorers1, "home"), addScorers(item.scorers2, "away"));
+    card.append(top, date, scoreRow, scorerTitle, scorers);
 
     if (isOwnerAccount(currentUser)) {
       const remove = document.createElement("button");
@@ -274,16 +323,14 @@ function renderHomepageResults(snapshot) {
         const label = (item.team1 || "الفريق الأول") + " ضد " + (item.team2 || "الفريق الثاني");
         if (!confirm("هل تريد حذف نتيجة مباراة " + label + " نهائياً؟")) return;
         remove.disabled = true;
-        remove.textContent = "جارٍ الحذف...";
         try {
           await deleteDoc(doc(db, "results", item.id));
         } catch (error) {
           alert("تعذر حذف النتيجة: " + error.message);
           remove.disabled = false;
-          remove.textContent = "🗑 حذف النتيجة";
         }
       });
-      card.appendChild(remove);
+      card.append(remove);
     }
     host.appendChild(card);
   });
