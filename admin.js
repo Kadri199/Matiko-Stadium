@@ -16,9 +16,11 @@ function message(id, text, error=false) {
 }
 function parseScorers(value) {
   return value.split("\n").map(line=>line.trim()).filter(Boolean).map(line=>{
-    const parts=line.split(/\s*[-–:]\s*/);
-    const goals=Number(parts.pop());
-    return {name:parts.join(" - ").trim(),goals:Number.isFinite(goals)&&goals>=0?goals:0};
+    // Accept either "Player - 2" or just "Player"; never discard a name
+    // merely because the goal count was omitted.
+    const match=line.match(/^(.*?)\s*[-–:]\s*(\d+)\s*$/);
+    if(match) return {name:match[1].trim(),goals:Number(match[2])};
+    return {name:line.replace(/\s*\(\d+\)\s*$/,"").trim(),goals:0};
   }).filter(x=>x.name);
 }
 function renderRecords(target, docs, type) {
