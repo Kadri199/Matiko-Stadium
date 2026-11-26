@@ -161,7 +161,7 @@ $("resultForm").addEventListener("submit",async e=>{
   }catch(err){message("resultMessage",err.message,true);}
 });
 const CLOUDINARY_CLOUD_NAME = "vigpliv3";
-const CLOUDINARY_UPLOAD_PRESET = "ml_default";
+const CLOUDINARY_UPLOAD_PRESET = "Kadri1992";
 let selectedNewsImage = null;
 let newsPreviewUrl = "";
 
