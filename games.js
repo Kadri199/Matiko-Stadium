@@ -19,14 +19,29 @@ function showStatus(game, message, type="") {
   el.textContent = message;
   el.className = "game-status" + (type ? " game-feedback " + type : "");
 }
-function safeName(game) {
-  const name = $(game + "Name").value.trim().replace(/\s+/g," ");
+function saveScore(game) {
+  const input = $(game + "Name");
+  const name = input.value.trim().replace(/\s+/g," ");
   if (name.length < 2 || name.length > 24) {
-    showStatus(game, "اكتب اسماً من حرفين إلى 24 حرفاً.", "bad");
-    $(game + "Name").focus();
-    return "";
+    showStatus(game, "اكتب اسمك من حرفين إلى 24 حرفاً لحفظ النتيجة.", "bad");
+    input.focus();
+    return;
   }
-  return name;
+  const s = state[game];
+  showStatus(game, "جارٍ حفظ نتيجتك...", "good");
+  $(game + "Save").disabled = true;
+  addDoc(scoreCollection(game), { name, score:s.score, createdAt:serverTimestamp() })
+    .then(() => {
+      showStatus(game, "تم تسجيل نتيجتك في قائمة أفضل 10 لاعبين!", "good");
+      $(game + "Register").classList.add("hidden");
+      $(game + "Start").disabled = false;
+      $(game + "Start").textContent = "العب مرة أخرى";
+    })
+    .catch(error => {
+      console.error("Could not save game score:", error);
+      showStatus(game, "تعذر حفظ النتيجة. حاول مجدداً.", "bad");
+      $(game + "Save").disabled = false;
+    });
 }
 function updateScore(game) {
   const s = state[game];
@@ -35,14 +50,9 @@ function updateScore(game) {
 }
 function renderTop(game, docs) {
   const host = $(game + "Top");
+  if (!host) return;
   host.replaceChildren();
-  if (!docs.length) {
-    const empty = document.createElement("li");
-    empty.className = "game-empty";
-    empty.textContent = "كن أول من يسجل اسمه في القائمة!";
-    host.append(empty);
-    return;
-  }
+  if (!docs.length) return;
   docs.forEach((entry, index) => {
     const data = entry.data();
     const li = document.createElement("li");
@@ -60,13 +70,12 @@ function renderTop(game, docs) {
   });
 }
 Object.keys(games).forEach(game => {
+  const host = $(game + "Top");
+  if (!host) return;
   const scoresQuery = query(scoreCollection(game), orderBy("score", "desc"), limit(10));
-  onSnapshot(scoresQuery, snapshot => {
-    const filtered = snapshot.docs.filter(item => item.data().game === game).slice(0,10);
-    renderTop(game, filtered);
-  }, error => {
+  onSnapshot(scoresQuery, snapshot => renderTop(game, snapshot.docs), error => {
     console.error("Leaderboard error:", error);
-    $(game + "Top").innerHTML = '<li class="game-empty">تعذر تحميل الترتيب حالياً.</li>';
+    host.textContent = "تعذر تحميل الترتيب حالياً.";
   });
 });
 
@@ -76,24 +85,15 @@ function finishGame(game) {
   s.busy = false;
   if (s.timer) { clearInterval(s.timer); s.timer = null; }
   updateScore(game);
-  const name = s.playerName;
-  showStatus(game, "انتهى التحدي! نتيجتك " + s.score + " من 5. جارٍ حفظها...", "good");
-  addDoc(scoreCollection(game), {
-    name, score: s.score, createdAt: serverTimestamp()
-  }).then(() => showStatus(game, "تم حفظ نتيجتك! راقب ترتيب أفضل 10 لاعبين.", "good"))
-    .catch(error => {
-      console.error("Could not save game score:", error);
-      showStatus(game, "تعذر حفظ النتيجة. تحقق من اتصال الإنترنت.", "bad");
-    });
-  $(game + "Start").disabled = false;
-  $(game + "Start").textContent = "العب مرة أخرى";
+  showStatus(game, "انتهت اللعبة! نتيجتك " + s.score + " من 5. اكتب اسمك لتسجيلها في أفضل 10.", "good");
+  $(game + "Register").classList.remove("hidden");
+  $(game + "Save").disabled = false;
+  $(game + "Name").focus();
 }
 
 function startPenalty() {
-  const name = safeName("penalty");
-  if (!name) return;
   const s = state.penalty;
-  s.active = true; s.shot = 0; s.score = 0; s.busy = false; s.playerName = name;
+  s.active = true; s.shot = 0; s.score = 0; s.busy = false;
   updateScore("penalty");
   $("penaltyStart").disabled = true;
   showStatus("penalty", "اختر جهة التسديد: يسار أو وسط أو يمين.");
@@ -123,7 +123,8 @@ function takePenalty(direction) {
     }
   }, 850);
 }
-$("penaltyStart").addEventListener("click", startPenalty);
+if ($("penaltyStart")) $("penaltyStart").addEventListener("click", startPenalty);
+if ($("penaltySave")) $("penaltySave").addEventListener("click", () => saveScore("penalty"));
 document.querySelectorAll("[data-penalty-shot]").forEach(button => {
   button.disabled = true;
   button.addEventListener("click", () => takePenalty(button.dataset.penaltyShot));
@@ -137,11 +138,9 @@ function paintMeter() {
   $("crossbarMeter").style.width = s.power + "%";
 }
 function startCrossbar() {
-  const name = safeName("crossbar");
-  if (!name) return;
   const s = state.crossbar;
   if (s.timer) clearInterval(s.timer);
-  s.active = true; s.shot = 0; s.score = 0; s.power = 0; s.direction = 1; s.busy = false; s.playerName = name;
+  s.active = true; s.shot = 0; s.score = 0; s.power = 0; s.direction = 1; s.busy = false;
   updateScore("crossbar");
   $("crossbarStart").disabled = true;
   $("crossbarHit").disabled = false;
@@ -176,6 +175,7 @@ function hitCrossbar() {
     }
   }, 850);
 }
-$("crossbarStart").addEventListener("click", startCrossbar);
-$("crossbarHit").addEventListener("click", hitCrossbar);
-$("crossbarHit").disabled = true;
+if ($("crossbarStart")) $("crossbarStart").addEventListener("click", startCrossbar);
+if ($("crossbarHit")) $("crossbarHit").addEventListener("click", hitCrossbar);
+if ($("crossbarSave")) $("crossbarSave").addEventListener("click", () => saveScore("crossbar"));
+if ($("crossbarHit")) $("crossbarHit").disabled = true;
