@@ -75,23 +75,27 @@ async function loadBookings(){
     detail.textContent="اليوم: "+d.day+" | الساعة: "+d.time+" | الحالة: "+statusText+(d.note?" | ملاحظة: "+d.note:"")+" | البريد: "+(d.teamEmail||"");
     content.append(title,detail);card.append(content);
     const actions=document.createElement("div");actions.className="record-actions";
-    if(d.status==="pending"){
-      for(const [status,label] of [["approved","موافقة"],["rejected","رفض"]]){
-        const btn=document.createElement("button");btn.className=status==="approved"?"btn btn-primary":"danger-btn";btn.textContent=label;
-        btn.addEventListener("click",async()=>{
-          btn.disabled=true;
-          try{
-            if(status==="approved"){
-              const allBookings=await getDocs(collection(db,"bookings"));
-              const conflict=allBookings.docs.some(x=>x.id!==item.id&&normalizeBookingValue(x.data().day)===normalizeBookingValue(d.day)&&normalizeBookingValue(x.data().time)===normalizeBookingValue(d.time)&&x.data().status==="approved");
-              if(conflict) throw new Error("هذا الموعد محجوز بالفعل. اختر طلباً آخر.");
-            }
-            await updateDoc(doc(db,"bookings",item.id),{status,reviewedAt:serverTimestamp()});
-            await loadBookings();
-          }catch(e){alert("تعذر تحديث الطلب: "+e.message);btn.disabled=false;}
-        });
-        actions.append(btn);
-      }
+    // Owner can approve any request, or disapprove it to release the slot back to green.
+    const actionOptions = d.status === "approved"
+      ? [["rejected","إلغاء الموافقة (إعادة إلى الأخضر)"]]
+      : [["approved","موافقة (تحويل إلى الأحمر)"],["rejected","عدم الموافقة (إبقاء الموعد أخضر)"]];
+    for(const [status,label] of actionOptions){
+      const btn=document.createElement("button");
+      btn.className=status==="approved"?"btn btn-primary":"danger-btn";
+      btn.textContent=label;
+      btn.addEventListener("click",async()=>{
+        btn.disabled=true;
+        try{
+          if(status==="approved"){
+            const allBookings=await getDocs(collection(db,"bookings"));
+            const conflict=allBookings.docs.some(x=>x.id!==item.id&&normalizeBookingValue(x.data().day)===normalizeBookingValue(d.day)&&normalizeBookingValue(x.data().time)===normalizeBookingValue(d.time)&&x.data().status==="approved");
+            if(conflict) throw new Error("هذا الموعد محجوز بالفعل. اختر طلباً آخر.");
+          }
+          await updateDoc(doc(db,"bookings",item.id),{status,reviewedAt:serverTimestamp()});
+          await loadBookings();
+        }catch(e){alert("تعذر تحديث الطلب: "+e.message);btn.disabled=false;}
+      });
+      actions.append(btn);
     }
     card.append(actions);host.append(card);
   });
