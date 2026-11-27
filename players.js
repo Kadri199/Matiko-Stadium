@@ -34,13 +34,15 @@ let score=0,number=0,locked=false,current=null,deck=[],lastCorrectIndex=-1;
 const shuffle=a=>{const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x};
 function level(){return score<10?"easy":score<30?"medium":"hard"}
 function nextEntry(){
- let pool=stages[stageIndex].filter(p=>!stageSeen.has(p.name));
- if(!pool.length){
+ let remaining=stages[stageIndex].filter(p=>!stageSeen.has(p.name));
+ if(!remaining.length){
   stageIndex++;
   if(stageIndex>=stages.length){stageIndex=0;stageSeen.clear();}
   deck=[];
-  pool=stages[stageIndex].filter(p=>!stageSeen.has(p.name));
+  remaining=stages[stageIndex].filter(p=>!stageSeen.has(p.name));
  }
+ let pool=remaining.filter(p=>p.level==="easy"||(level()!=="easy"&&p.level==="medium")||level()==="hard");
+ if(!pool.length)pool=remaining;
  const available=new Set(pool.map(p=>p.name));
  deck=deck.filter(p=>available.has(p.name));
  if(!deck.length)deck=shuffle(pool);
