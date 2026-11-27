@@ -533,4 +533,26 @@ onAuthStateChanged(auth,async user=>{
   ownerReady=true;$("ownerEmail").textContent=user.email;
   $("accessMessage").classList.add("hidden");$("dashboard").classList.remove("hidden");
   await loadAll();
+  const params=new URLSearchParams(location.search);
+  if(params.get("bookingResult")==="1"){
+    const team1=params.get("team1")||"";
+    const team2=params.get("team2")||"";
+    const day=params.get("day")||"";
+    const time=params.get("time")||"";
+    const weekdays=["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+    const weekdayIndex=weekdays.indexOf(day);
+    if(weekdayIndex>=0){
+      const date=new Date();
+      date.setDate(date.getDate()+((weekdayIndex-date.getDay()+7)%7));
+      $("matchDate").value=[date.getFullYear(),String(date.getMonth()+1).padStart(2,"0"),String(date.getDate()).padStart(2,"0")].join("-");
+    }
+    $("resultTeam1").value=team1;
+    $("resultTeam2").value=team2;
+    $("resultTeam1").readOnly=true;
+    $("resultTeam2").readOnly=true;
+    const currentTimes=Array.from($("resultTime").options).map(option=>option.value);
+    setResultTimeOptions(time?[...currentTimes,time]:currentTimes,time);
+    activateAdminPanel("results");
+    $("score1").focus();
+  }else if(params.get("panel")==="results")activateAdminPanel("results");
 });
