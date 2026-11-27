@@ -285,7 +285,7 @@ async function loadBookings(){
   if(!docs.length){host.innerHTML='<div class="empty-state">لا توجد طلبات حجز حتى الآن.</div>';return;}
   docs.forEach(item=>{
     const d=item.data(),card=document.createElement("article");card.className="record booking-record";
-    const bin=document.createElement("button");bin.type="button";bin.className="booking-delete-btn";bin.textContent="🗑";bin.title="حذف طلب الحجز";bin.setAttribute("aria-label","حذف طلب الحجز");
+    const bin=document.createElement("button");bin.type="button";bin.className="booking-delete-btn";bin.textContent="حذف";bin.title="حذف طلب الحجز";bin.setAttribute("aria-label","حذف طلب الحجز");
     bin.addEventListener("click",async()=>{if(!confirm("هل تريد حذف طلب الحجز نهائياً؟ لا يمكن التراجع عن هذا الإجراء."))return;bin.disabled=true;try{await deleteDoc(doc(db,"bookings",item.id));await loadBookings();}catch(error){alert("تعذر حذف طلب الحجز: "+error.message);bin.disabled=false;}});
     const content=document.createElement("div"),title=document.createElement("h3"),detail=document.createElement("p");
     title.textContent=(d.teamName||"فريق")+" × "+(d.opponentName||"فريق منافس");
