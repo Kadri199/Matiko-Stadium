@@ -20,6 +20,38 @@ const safe = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;"
 function showMessage(id, value, error=false) {
   const el=$(id); el.textContent=value; el.style.color=error?"#a34d43":"#16704d";
 }
+function openChallengeChat(challengeId, challengeTitle, senderName){
+  const overlay=document.createElement("div");
+  overlay.style.cssText="position:fixed;inset:0;z-index:10000;background:#071b13b8;display:flex;align-items:center;justify-content:center;padding:12px";
+  const panel=document.createElement("section");panel.dir="rtl";panel.style.cssText="width:min(620px,100%);height:min(82vh,720px);display:flex;flex-direction:column;background:#fff;border-radius:18px;padding:16px;box-shadow:0 20px 60px #0005;font-family:Cairo,sans-serif;color:#18352b";
+  const head=document.createElement("div");head.style.cssText="display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #e3ece6;padding-bottom:10px";
+  const heading=document.createElement("h2");heading.textContent="محادثة التحدي";heading.style.cssText="font-size:18px;margin:0";
+  const close=document.createElement("button");close.type="button";close.textContent="إغلاق";close.style.cssText="border:0;border-radius:9px;padding:8px 12px;background:#edf3ef;color:#18352b;font:700 12px Cairo,sans-serif";
+  head.append(heading,close);
+  const subtitle=document.createElement("p");subtitle.textContent=challengeTitle+" — المحادثة خاصة بالفريقين وإدارة الملعب";subtitle.style.cssText="font-size:12px;color:#64756b;margin:8px 0";
+  const messages=document.createElement("div");messages.style.cssText="flex:1;min-height:0;overflow:auto;background:#f4f8f5;border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px";
+  const form=document.createElement("form");form.style.cssText="display:flex;gap:8px;margin-top:10px;align-items:stretch";
+  const input=document.createElement("textarea");input.rows=2;input.maxLength=1000;input.placeholder="اكتب رسالتك...";input.required=true;input.style.cssText="flex:1;min-width:0;resize:vertical;border:1px solid #cad8ce;border-radius:10px;padding:10px;font:14px/1.7 Cairo,sans-serif";
+  const send=document.createElement("button");send.type="submit";send.textContent="إرسال";send.style.cssText="border:0;border-radius:10px;padding:10px 16px;background:#116149;color:#fff;font:800 13px Cairo,sans-serif";
+  form.append(input,send);panel.append(head,subtitle,messages,form);overlay.append(panel);document.body.append(overlay);
+  let unsubscribe=null,closed=false;
+  const finish=()=>{if(closed)return;closed=true;unsubscribe?.();document.removeEventListener("keydown",onKey);overlay.remove();};
+  const onKey=e=>{if(e.key==="Escape")finish();};
+  close.addEventListener("click",finish);overlay.addEventListener("click",e=>{if(e.target===overlay)finish();});document.addEventListener("keydown",onKey);
+  unsubscribe=onSnapshot(collection(db,"challenges",challengeId,"messages"),snap=>{
+    const docs=snap.docs.sort((a,b)=>(a.data().createdAt?.seconds||0)-(b.data().createdAt?.seconds||0));
+    messages.innerHTML="";
+    if(!docs.length){const empty=document.createElement("p");empty.textContent="لا توجد رسائل بعد. ابدأوا التنسيق هنا.";empty.style.cssText="text-align:center;color:#718078;font-size:13px;margin:auto";messages.append(empty);}
+    docs.forEach(item=>{const d=item.data();const bubble=document.createElement("article");bubble.style.cssText="max-width:88%;align-self:"+(d.senderUid===currentUser.uid?"flex-start":"flex-end")+";background:"+(d.senderUid===currentUser.uid?"#e2f3e9":"#fff")+";border:1px solid #dce8df;border-radius:12px;padding:8px 11px";
+      const who=document.createElement("strong");who.textContent=d.senderName||"مشارك";who.style.cssText="display:block;font-size:11px;color:#27704f;margin-bottom:3px";
+      const body=document.createElement("div");body.textContent=d.text||"";body.style.cssText="white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.7";
+      const time=document.createElement("small");time.textContent=d.createdAt?.toDate?d.createdAt.toDate().toLocaleString("ar-DZ"):"";time.style.cssText="display:block;color:#87948b;font-size:10px;margin-top:4px";
+      bubble.append(who,body,time);messages.append(bubble);
+    });
+    messages.scrollTop=messages.scrollHeight;
+  },error=>{messages.innerHTML="";const msg=document.createElement("p");msg.textContent="تعذر تحميل المحادثة: "+error.message;messages.append(msg);});
+  form.addEventListener("submit",async e=>{e.preventDefault();const value=input.value.trim();if(!value)return;send.disabled=true;try{await addDoc(collection(db,"challenges",challengeId,"messages"),{senderUid:currentUser.uid,senderName,text:value,createdAt:serverTimestamp()});input.value="";}catch(error){alert("تعذر إرسال الرسالة: "+error.message);}finally{send.disabled=false;input.focus();}});
+}
 function challengeCard(item, own=false) {
   const d=item.data();
   const accepted=d.status==="accepted";
@@ -29,7 +61,12 @@ function challengeCard(item, own=false) {
   const meta=document.createElement("div"); meta.className="meta"; meta.textContent="📅 "+d.day+"   •   🕒 "+d.time;
   const note=document.createElement("p"); note.textContent=d.note||"لا توجد ملاحظة.";
   card.append(tag,title,meta,note);
-  if(accepted){const acceptedLine=document.createElement("p");acceptedLine.textContent="الفريق المنافس: "+(d.acceptedByName||"فريق مشارك");card.append(acceptedLine);}
+  if(accepted){
+    const acceptedLine=document.createElement("p");acceptedLine.textContent="الفريق المنافس: "+(d.acceptedByName||"فريق مشارك");card.append(acceptedLine);
+    const chat=document.createElement("button");chat.type="button";chat.className="btn btn-primary";chat.textContent="💬 فتح المحادثة";
+    chat.addEventListener("click",()=>openChallengeChat(item.id,(d.teamName||"فريق")+" × "+(d.acceptedByName||"فريق مشارك"),profile.fullName||"الفريق"));
+    actions.append(chat);
+  }
   const actions=document.createElement("div");actions.className="card-actions";
   if(!own&&!accepted&&d.teamUid!==currentUser.uid){
     const btn=document.createElement("button");btn.className="btn btn-primary";btn.textContent="قبول التحدي";
