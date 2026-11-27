@@ -550,6 +550,9 @@ onAuthStateChanged(auth,async user=>{
     $("resultTeam2").value=team2;
     $("resultTeam1").readOnly=true;
     $("resultTeam2").readOnly=true;
+    ["matchDate","resultTime","resultTeam1","resultTeam2","resultCrest1","resultCrest2"].forEach(id=>$ (id).closest("label")?.classList.add("hidden"));
+    $("resultCrest1").closest(".form-grid")?.classList.add("hidden");
+    $("resultCrest1").closest(".form-grid")?.nextElementSibling?.classList.add("hidden");
     const currentTimes=Array.from($("resultTime").options).map(option=>option.value);
     setResultTimeOptions(time?[...currentTimes,time]:currentTimes,time);
     activateAdminPanel("results");
