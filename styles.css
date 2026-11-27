@@ -242,19 +242,19 @@
   justify-content:center;
   min-height:40px;
   padding:9px 22px;
-  background:#15803d;
-  color:#fff;
+  background:#c8f169;
+  color:#123b2c;
   text-decoration:none;
   border:0;
   border-radius:8px;
   box-shadow:none;
-  font-weight:800;
+  font-weight:900;
   font-size:13px;
   line-height:1.2;
   white-space:nowrap;
   flex-shrink:0;
 }
-.hero-topline .app-download-button:hover{background:#166534;color:#fff}
+.hero-topline .app-download-button:hover{background:#b4e653;color:#123b2c}
 @media(max-width:480px){
   .hero-topline .app-download-button{min-height:36px;padding:8px 14px;font-size:11px}
 }
