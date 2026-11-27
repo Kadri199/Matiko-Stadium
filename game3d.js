@@ -26,8 +26,42 @@ function person(x,z,keeper=false){const g=new THREE.Group();g.position.set(x,0,z
 mesh(new THREE.CapsuleGeometry(.34,.62,5,10),jersey,0,1.38,0,g);mesh(new THREE.SphereGeometry(.22,16,12),skin,0,2.05,0,g);mesh(new THREE.SphereGeometry(.225,16,12),black,0,2.17,0,g).scale.set(1,.45,1);
 for(const s of [-1,1]){bar(new THREE.Vector3(s*.3,1.62,0),new THREE.Vector3(s*.48,1.12,.04),.105,jersey,g);mesh(new THREE.SphereGeometry(.1,10,8),skin,s*.48,1.1,.04,g);bar(new THREE.Vector3(s*.17,1.05,0),new THREE.Vector3(s*.2,.53,.02),.13,navy,g);bar(new THREE.Vector3(s*.2,.53,.02),new THREE.Vector3(s*.2,.12,-.04),.09,black,g);mesh(new THREE.BoxGeometry(.32,.14,.48),black,s*.2,.08,-.13,g)}
 return g}
-const keeper=person(0,gz+.4,true);keeper.scale.setScalar(1.12);const ball=mesh(new THREE.SphereGeometry(.22,24,18),M(0xf8f8f4,.3),0,.23,5.15);
-const seams=M(0x18232a);for(let i=0;i<3;i++){const t=mesh(new THREE.TorusGeometry(.14,.009,5,24),seams,0,0,0,ball);t.rotation.set(i*.9,i*.7,i*.4)}
+const keeper=person(0,gz+.4,true);keeper.scale.setScalar(1.12);
+// Premium football surface: locally generated panel artwork, so no external image or network dependency.
+function makeFootballTexture(){
+  const canvas=document.createElement("canvas");canvas.width=1024;canvas.height=512;
+  const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;
+  const base=ctx.createLinearGradient(0,0,w,h);base.addColorStop(0,"#ffffff");base.addColorStop(.5,"#e9edf0");base.addColorStop(1,"#ffffff");
+  ctx.fillStyle=base;ctx.fillRect(0,0,w,h);
+  const R=39,dx=R*1.5,dy=Math.sqrt(3)*R;
+  function polygon(x,y,r,n,rotation,fill,stroke="#182536",line=4){
+    ctx.beginPath();for(let k=0;k<n;k++){const a=rotation+k*Math.PI*2/n,px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;k?ctx.lineTo(px,py):ctx.moveTo(px,py)}
+    ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.lineWidth=line;ctx.strokeStyle=stroke;ctx.stroke();
+  }
+  // Honeycomb panel seams across the full wrap.
+  for(let row=-1;row<Math.ceil(h/dy)+2;row++)for(let col=-1;col<Math.ceil(w/dx)+2;col++){
+    const x=col*dx+(row%2)*dx/2,y=row*dy;
+    polygon(x,y,R,6,Math.PI/6,"rgba(255,255,255,0.22)","#27364a",3);
+    if((col+row*2)%7===0){
+      const dark=ctx.createLinearGradient(x-R,y-R,x+R,y+R);dark.addColorStop(0,"#263449");dark.addColorStop(1,"#080f1c");
+      polygon(x,y,R*.69,5,-Math.PI/2,dark,"#f4f6f5",5);
+      ctx.beginPath();ctx.arc(x,y,R*.43,0,Math.PI*2);ctx.strokeStyle="#4b6078";ctx.lineWidth=2;ctx.stroke();
+    }else if((col*3+row)%11===0){
+      ctx.save();ctx.translate(x,y);ctx.rotate((col-row)*.12);
+      ctx.beginPath();ctx.moveTo(-R*.48,-R*.55);ctx.lineTo(R*.52,-R*.35);ctx.lineTo(R*.18,R*.62);ctx.closePath();
+      const accent=ctx.createLinearGradient(-R,0,R,0);accent.addColorStop(0,"#0879c9");accent.addColorStop(1,"#24b4e8");ctx.fillStyle=accent;ctx.fill();
+      ctx.lineWidth=3;ctx.strokeStyle="#f4f6f5";ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-R*.36,R*.46);ctx.lineTo(R*.43,R*.3);ctx.strokeStyle="#e5a52e";ctx.lineWidth=5;ctx.stroke();
+      ctx.restore();
+    }
+  }
+  // Fine surface details give the ball a manufactured, premium finish.
+  ctx.globalAlpha=.18;for(let y=0;y<h;y+=8){ctx.fillStyle=y%16?"#ffffff":"#64748b";ctx.fillRect(0,y,w,1)}ctx.globalAlpha=1;
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=renderer.capabilities.getMaxAnisotropy();return texture;
+}
+const ballTexture=makeFootballTexture();
+const ballMaterial=new THREE.MeshStandardMaterial({map:ballTexture,roughness:.43,metalness:.025});
+const ball=mesh(new THREE.SphereGeometry(.22,40,28),ballMaterial,0,.23,5.15);
 const groundShadow=mesh(new THREE.CircleGeometry(.35,24),new THREE.MeshBasicMaterial({color:0x07160b,transparent:true,opacity:.3}),0,-.045,5.15);groundShadow.rotation.x=-Math.PI/2;
 const aimMat=new THREE.MeshBasicMaterial({color:0x39ff62,transparent:true,opacity:.98,depthTest:false});
 const aimGlowMat=new THREE.MeshBasicMaterial({color:0x39ff62,transparent:true,opacity:.28,depthTest:false});
