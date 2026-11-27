@@ -32,7 +32,7 @@ const bookingSyncStatus = $("bookingSyncStatus");
 let registeredTeamProfiles=[];
 function sortTeamNames(values){return [...new Set(values.map(x=>String(x||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar"));}
 function populateOpponentOptions(){const select=$("teamTwo");if(!select)return;const previous=select.value;select.innerHTML="";const other=document.createElement("option");other.value="__other__";other.textContent="فريق آخر";select.appendChild(other);sortTeamNames(registeredTeamProfiles.map(x=>x.fullName)).forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;select.appendChild(option);});if(previous&&[...select.options].some(x=>x.value===previous))select.value=previous;toggleOtherTeamInput();}
-function toggleOtherTeamInput(){const select=$("teamTwo"),input=$("teamTwoOther"),wrap=$("teamTwoOtherWrap");if(!select||!input)return;const custom=select.value==="__other__";wrap?.classList.toggle("hidden",!custom);input.required=custom;if(!custom)input.value="";}
+function toggleOtherTeamInput(){const select=$("teamTwo"),input=$("teamTwoOther"),wrap=$("teamTwoOtherWrap");if(!select||!input||!wrap)return;const custom=select.value==="__other__";wrap.classList.toggle("hidden",!custom);wrap.hidden=!custom;wrap.style.display=custom?"":"none";input.required=custom;input.disabled=!custom;if(!custom)input.value="";}
 $("teamTwo").addEventListener("change",toggleOtherTeamInput);
 onSnapshot(collection(db,"teamDirectory"),snapshot=>{registeredTeamProfiles=snapshot.docs.map(d=>d.data()).filter(d=>d.fullName);populateOpponentOptions();},error=>console.error("Could not load team directory:",error));
 
