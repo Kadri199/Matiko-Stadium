@@ -23,24 +23,14 @@
   <div id="pageMessage" class="message" role="status">جارٍ تحميل بيانات الفريق...</div>
 
   <section class="panel matches-panel">
-    <div class="section-title"><div><span class="eyebrow dark">سجل فريقك</span><h2>نتائج مقابلاتي</h2><p>سجّل كل مباراة ونتيجتها لمتابعة أداء فريقك.</p></div></div>
+    <div class="section-title"><div><span class="eyebrow dark">سجل فريقك</span><h2>نتائج مقابلاتي</h2><p>تظهر هنا تلقائياً نتائج المباريات التي ينشرها مدير الملعب ويكون فريقك أحد طرفيها.</p></div></div>
     <div class="match-stats">
       <article><span>المقابلات الملعوبة</span><b id="teamMatchesPlayed">0</b></article>
       <article><span>الأهداف المسجلة</span><b id="teamGoalsScored">0</b></article>
       <article><span>الأهداف المستقبلة</span><b id="teamGoalsConceded">0</b></article>
     </div>
-    <form id="teamMatchForm" class="challenge-form match-form">
-      <label>الفريق المنافس<input id="matchOpponent" type="text" maxlength="60" required placeholder="اسم الفريق المنافس"></label>
-      <label>تاريخ المقابلة<input id="matchDate" type="date" required></label>
-      <label>أهداف فريقي<input id="matchGoalsFor" type="number" min="0" max="99" step="1" required inputmode="numeric" placeholder="0"></label>
-      <label>أهداف الفريق المنافس<input id="matchGoalsAgainst" type="number" min="0" max="99" step="1" required inputmode="numeric" placeholder="0"></label>
-      <button class="btn btn-primary wide" id="saveMatchBtn" type="submit">＋ تسجيل نتيجة المقابلة</button>
-      <p id="matchMessage" class="form-message wide"></p>
-    </form>
-    <div class="match-results-heading"><h3>المباريات الملعوبة</h3><span>الأحدث أولاً</span></div>
-    <div id="teamMatchResults" class="team-match-results"><div class="empty">لا توجد مقابلات مسجلة بعد.</div></div>
+    <div id="teamMatchResults" class="team-match-results"><div class="empty">جارٍ تحميل نتائج مقابلات فريقك...</div></div>
   </section>
-
   <section class="stats">
     <article><span>تحدياتي</span><b id="myChallengeCount">0</b></article>
     <article><span>تحديات مفتوحة</span><b id="openChallengeCount">0</b></article>
