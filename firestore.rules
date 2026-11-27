@@ -110,7 +110,7 @@ service cloud.firestore {
     // Public append-only leaderboards for the two lightweight stadium games.
     match /gameScores/{game}/entries/{entryId} {
       allow read: if game in ["penalty", "crossbar", "players"];
-      allow create: if game in ["penalty", "crossbar"]
+      allow create: if game in ["penalty", "players"]
         && request.resource.data.keys().hasOnly(["name", "score", "createdAt"])
         && request.resource.data.name is string
         && request.resource.data.name.size() >= 2
