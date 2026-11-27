@@ -108,35 +108,6 @@ service cloud.firestore {
     }
 
 
-    // Each team can manage only its own match history and scores.
-    match /teamMatches/{matchId} {
-      function isTeam() {
-        return signedIn()
-          && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "team";
-      }
-      allow read: if isOwner() || (signedIn() && resource.data.teamUid == request.auth.uid);
-      allow create: if isTeam()
-        && request.resource.data.teamUid == request.auth.uid
-        && request.resource.data.teamName is string
-        && request.resource.data.opponentName is string
-        && request.resource.data.opponentName.size() > 0
-        && request.resource.data.matchDate is string
-        && request.resource.data.goalsFor is int
-        && request.resource.data.goalsFor >= 0
-        && request.resource.data.goalsFor <= 99
-        && request.resource.data.goalsAgainst is int
-        && request.resource.data.goalsAgainst >= 0
-        && request.resource.data.goalsAgainst <= 99
-        && request.resource.data.createdAt is timestamp
-        && request.resource.data.keys().hasOnly([
-          "teamUid", "teamName", "opponentName", "matchDate",
-          "goalsFor", "goalsAgainst", "createdAt"
-        ]);
-      allow update: if false;
-      allow delete: if isOwner() || (isTeam() && resource.data.teamUid == request.auth.uid);
-    }
-
     // Public append-only leaderboards for the two lightweight stadium games.
     match /gameScores/{game}/entries/{entryId} {
       allow read: if game in ["penalty", "crossbar", "players"];
