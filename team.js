@@ -59,71 +59,52 @@ function challengeCard(item, own=false) {
 }
 function renderTeamMatches(items){
   const host=$("teamMatchResults");
-  const ordered=[...items].sort((a,b)=>String(b.data().matchDate||"").localeCompare(String(a.data().matchDate||"")));
+  const teamName=String(profile?.fullName||"").trim();
+  const ordered=[...items].sort((a,b)=>{
+    const da=a.data(),db=b.data();
+    return String(db.date||"").localeCompare(String(da.date||"")) ||
+      ((db.createdAt?.seconds||0)-(da.createdAt?.seconds||0));
+  });
   const totals=ordered.reduce((sum,item)=>{
     const d=item.data();
-    sum.scored+=Number(d.goalsFor)||0;
-    sum.conceded+=Number(d.goalsAgainst)||0;
+    const isHome=String(d.team1||"").trim()===teamName;
+    sum.scored+=Number(isHome?d.score1:d.score2)||0;
+    sum.conceded+=Number(isHome?d.score2:d.score1)||0;
     return sum;
   },{scored:0,conceded:0});
   $("teamMatchesPlayed").textContent=ordered.length;
   $("teamGoalsScored").textContent=totals.scored;
   $("teamGoalsConceded").textContent=totals.conceded;
   host.innerHTML="";
-  if(!ordered.length){host.innerHTML='<div class="empty">لم تسجّل أي مقابلة بعد. أضف نتيجة أول مباراة لفريقك.</div>';return;}
+  if(!ordered.length){host.innerHTML='<div class="empty">لا توجد نتائج منشورة لمقابلات فريقك حتى الآن.</div>';return;}
   ordered.forEach(item=>{
     const d=item.data();
     const card=document.createElement("article");card.className="team-match-card";
     const head=document.createElement("div");head.className="team-match-head";
-    const opponent=document.createElement("strong");opponent.textContent=d.opponentName||"فريق منافس";
-    const date=document.createElement("time");date.textContent=d.matchDate||"";
-    head.append(opponent,date);
+    const date=document.createElement("time");date.textContent=[d.date,d.time].filter(Boolean).join(" • ");
+    const status=document.createElement("span");status.className="tag";status.textContent="مباراة مكتملة";
+    head.append(date,status);
     const score=document.createElement("div");score.className="team-match-score";
-    const own=document.createElement("span");own.textContent=profile.fullName||"فريقي";
-    const result=document.createElement("b");result.textContent=String(d.goalsFor)+" - "+String(d.goalsAgainst);
-    const other=document.createElement("span");other.textContent=d.opponentName||"المنافس";
-    score.append(own,result,other);
-    const del=document.createElement("button");del.type="button";del.className="btn btn-outline match-delete";del.textContent="حذف";
-    del.addEventListener("click",async()=>{
-      if(!confirm("هل تريد حذف نتيجة هذه المقابلة؟"))return;
-      del.disabled=true;
-      try{await deleteDoc(doc(db,"teamMatches",item.id));await loadTeamMatches();}
-      catch(e){del.disabled=false;showMessage("matchMessage","تعذر حذف النتيجة: "+e.message,true);}
-    });
-    card.append(head,score,del);host.append(card);
+    const home=document.createElement("span");home.textContent=d.team1||"الفريق الأول";
+    const result=document.createElement("b");result.textContent=String(d.score1??"—")+" - "+String(d.score2??"—");
+    const away=document.createElement("span");away.textContent=d.team2||"الفريق الثاني";
+    score.append(home,result,away);
+    card.append(head,score);host.append(card);
   });
 }
 async function loadTeamMatches(){
-  if(!ready||!currentUser)return;
+  if(!ready||!currentUser||!profile?.fullName)return;
   try{
-    const snap=await getDocs(query(collection(db,"teamMatches"),where("teamUid","==",currentUser.uid)));
-    renderTeamMatches(snap.docs);
-  }catch(e){showMessage("matchMessage","تعذر تحميل نتائج المقابلات: "+e.message,true);}
+    const teamName=String(profile.fullName).trim();
+    const [homeSnap,awaySnap]=await Promise.all([
+      getDocs(query(collection(db,"results"),where("team1","==",teamName))),
+      getDocs(query(collection(db,"results"),where("team2","==",teamName)))
+    ]);
+    const byId=new Map();
+    [...homeSnap.docs,...awaySnap.docs].forEach(item=>byId.set(item.id,item));
+    renderTeamMatches([...byId.values()]);
+  }catch(e){showMessage("pageMessage","تعذر تحميل نتائج مقابلات فريقك: "+e.message,true);}
 }
-$("teamMatchForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  if(!ready||!currentUser||!profile){showMessage("matchMessage","انتظر حتى يكتمل تحميل ملف فريقك.",true);return;}
-  const opponent=$("matchOpponent").value.trim();
-  const matchDate=$("matchDate").value;
-  const goalsFor=Number($("matchGoalsFor").value);
-  const goalsAgainst=Number($("matchGoalsAgainst").value);
-  if(!opponent||!matchDate||!Number.isInteger(goalsFor)||!Number.isInteger(goalsAgainst)||goalsFor<0||goalsAgainst<0||goalsFor>99||goalsAgainst>99){
-    showMessage("matchMessage","يرجى إدخال اسم الفريق والتاريخ وعدد صحيح للأهداف من 0 إلى 99.",true);return;
-  }
-  const btn=$("saveMatchBtn");btn.disabled=true;btn.textContent="جارٍ حفظ النتيجة...";
-  try{
-    await addDoc(collection(db,"teamMatches"),{
-      teamUid:currentUser.uid,teamName:profile.fullName||"فريق",
-      opponentName:opponent,matchDate,goalsFor,goalsAgainst,createdAt:serverTimestamp()
-    });
-    e.target.reset();
-    const today=new Date();
-    $("matchDate").value=[today.getFullYear(),String(today.getMonth()+1).padStart(2,"0"),String(today.getDate()).padStart(2,"0")].join("-");
-    showMessage("matchMessage","تم تسجيل نتيجة المقابلة بنجاح.");
-    await loadTeamMatches();
-  }catch(err){showMessage("matchMessage","تعذر تسجيل النتيجة: "+err.message,true);}
-  finally{btn.disabled=false;btn.textContent="＋ تسجيل نتيجة المقابلة";}
-});
 function renderList(id,items,own=false){
   const host=$(id);host.innerHTML="";
   if(!items.length){host.innerHTML='<div class="empty">لا توجد تحديات لعرضها حالياً.</div>';return;}
@@ -195,8 +176,6 @@ onAuthStateChanged(auth,async user=>{
     profile=snap.data();ready=true;
     $("teamName").textContent=profile.fullName||"فريقي";
     $("teamEmail").textContent=user.email||"";
-    const now=new Date();
-    $("matchDate").value=[now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
     showMessage("pageMessage","تم تسجيل الدخول بنجاح.");
     await Promise.all([loadChallenges(),loadTeamMatches()]);
   }catch(e){showMessage("pageMessage","تعذر تحميل ملف الفريق: "+e.message,true);}
