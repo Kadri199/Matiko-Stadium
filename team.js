@@ -2,7 +2,7 @@ import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import {
   collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
-  query, where, serverTimestamp
+  query, where, serverTimestamp, onSnapshot
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const OWNER_UID = "hU0pqkyVYMYhBQ5GBAPHcHemph23";
@@ -11,6 +11,7 @@ const $ = id => document.getElementById(id);
 let currentUser = null;
 let profile = null;
 let ready = false;
+let teamResultsUnsubscribers = [];
 const goHome = () => { window.location.assign("https://kadri199.github.io/Matiko-Stadium/"); };
 document.getElementById("homeBtn").addEventListener("click", goHome);
 document.getElementById("homeBtnBottom").addEventListener("click", goHome);
@@ -92,18 +93,32 @@ function renderTeamMatches(items){
     card.append(head,score);host.append(card);
   });
 }
-async function loadTeamMatches(){
+function loadTeamMatches(){
   if(!ready||!currentUser||!profile?.fullName)return;
-  try{
-    const teamName=String(profile.fullName).trim();
-    const [homeSnap,awaySnap]=await Promise.all([
-      getDocs(query(collection(db,"results"),where("team1","==",teamName))),
-      getDocs(query(collection(db,"results"),where("team2","==",teamName)))
-    ]);
-    const byId=new Map();
-    [...homeSnap.docs,...awaySnap.docs].forEach(item=>byId.set(item.id,item));
-    renderTeamMatches([...byId.values()]);
-  }catch(e){showMessage("pageMessage","تعذر تحميل نتائج مقابلات فريقك: "+e.message,true);}
+  teamResultsUnsubscribers.forEach(unsubscribe=>unsubscribe());
+  teamResultsUnsubscribers=[];
+  const teamName=String(profile.fullName).trim();
+  const matchesById=new Map();
+  const sync=()=>{
+    renderTeamMatches([...matchesById.values()]);
+  };
+  const handleError=e=>showMessage("pageMessage","تعذر مزامنة نتائج مقابلات فريقك: "+e.message,true);
+  const homeQuery=query(collection(db,"results"),where("team1","==",teamName));
+  const awayQuery=query(collection(db,"results"),where("team2","==",teamName));
+  teamResultsUnsubscribers.push(onSnapshot(homeQuery,snap=>{
+    snap.docChanges().forEach(change=>{
+      if(change.type==="removed")matchesById.delete(change.doc.id);
+      else matchesById.set(change.doc.id,change.doc);
+    });
+    sync();
+  },handleError));
+  teamResultsUnsubscribers.push(onSnapshot(awayQuery,snap=>{
+    snap.docChanges().forEach(change=>{
+      if(change.type==="removed")matchesById.delete(change.doc.id);
+      else matchesById.set(change.doc.id,change.doc);
+    });
+    sync();
+  },handleError));
 }
 function renderList(id,items,own=false){
   const host=$(id);host.innerHTML="";
