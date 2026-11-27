@@ -17,8 +17,7 @@
 }
 
 
-/* Small owner-only delete bin at the top-left of each booking card. */
-.booking-record{position:relative;padding-left:48px}
-.booking-delete-btn{position:absolute;left:10px;top:10px;width:28px;height:28px;padding:0;display:grid;place-items:center;border:1px solid #f0d4d0;border-radius:8px;background:#fff7f5;color:#a34d43;font-size:14px;line-height:1;cursor:pointer}
+/* Owner delete control stays inside each booking card action row. */
+.booking-delete-btn{width:30px;height:30px;min-width:30px;padding:0;display:inline-grid;place-items:center;align-self:center;border:1px solid #f0d4d0;border-radius:8px;background:#fff7f5;color:#a34d43;font-size:14px;line-height:1;cursor:pointer;flex:0 0 30px!important}
 .booking-delete-btn:hover{background:#fee9e6;border-color:#e9b8b1}
 .booking-delete-btn:disabled{opacity:.55;cursor:wait}
