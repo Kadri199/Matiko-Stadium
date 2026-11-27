@@ -382,7 +382,7 @@ const newsVideoInput = $("newsVideoUrl");
 function getYouTubeVideoId(value){
   const raw=String(value||"").trim();if(!raw)return "";
   try{
-    const url=new URL(raw);const host=url.hostname.replace(/^www\\./,"").replace(/^m\\./,"");
+    const url=new URL(raw);const host=url.hostname.replace(/^www\./,"").replace(/^m\./,"");
     if(host==="youtu.be")return url.pathname.split("/").filter(Boolean)[0]||"";
     if(host==="youtube.com"||host==="youtube-nocookie.com"){
       if(url.pathname==="/watch")return url.searchParams.get("v")||"";
