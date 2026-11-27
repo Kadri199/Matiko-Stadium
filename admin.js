@@ -421,6 +421,7 @@ async function loadAll(){
       $("aboutLocation").value=about.data().location||"";
       $("aboutPhone").value=about.data().phone||"";
       $("aboutFacebook").value=about.data().facebookGroup||"";
+      $("aboutGoogleMaps").value=about.data().googleMapsUrl||"";
     }
   }catch(e){$("accessMessage").textContent="تعذر تحميل بيانات اللوحة: "+e.message;}
 }
@@ -608,7 +609,7 @@ $("aboutForm").addEventListener("submit",async e=>{
   try{
     await setDoc(doc(db,"settings","about"),{
       description:$("aboutDescription").value.trim(),location:$("aboutLocation").value.trim(),
-      phone:$("aboutPhone").value.trim(),facebookGroup:$("aboutFacebook").value.trim(),updatedAt:serverTimestamp()
+      phone:$("aboutPhone").value.trim(),facebookGroup:$("aboutFacebook").value.trim(),googleMapsUrl:$("aboutGoogleMaps").value.trim(),updatedAt:serverTimestamp()
     });
     message("aboutMessage","تم حفظ معلومات الملعب.");
   }catch(err){message("aboutMessage",err.message,true);}
