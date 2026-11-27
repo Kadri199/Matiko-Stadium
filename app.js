@@ -510,7 +510,7 @@ onSnapshot(doc(db, "settings", "about"), snapshot => {
   const mapLink = $("aboutGoogleMapsHome");
   if (mapLink) {
     const mapUrl = String(data.googleMapsUrl || "").trim();
-    if (mapUrl && /^https?:\\/\\//i.test(mapUrl)) {
+    if (mapUrl && /^https?:\/\//i.test(mapUrl)) {
       mapLink.href = mapUrl;
       mapLink.classList.remove("hidden");
     } else {
