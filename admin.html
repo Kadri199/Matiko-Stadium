@@ -72,7 +72,7 @@
           <form id="newsForm" class="form-card">
             <label>عنوان الخبر<input id="newsTitle" required maxlength="120"></label>
             <label>نص الخبر<textarea id="newsBody" rows="5" required></textarea></label>
-            <label>صورة الخبر (اختياري)<input id="newsImageFile" type="file" accept="image/*"></label><div id="newsImagePreviewWrap" class="news-upload-preview hidden"><img id="newsImagePreview" alt="معاينة صورة الخبر"><button type="button" id="clearNewsImage" class="btn btn-ghost">🗑 إزالة الصورة</button></div><small class="hint">اختر صورة من هاتفك، أو استخدم رابط فيديو YouTube أدناه — لا يمكن إضافة الاثنين معاً.</small><label>رابط فيديو YouTube (اختياري)<input id="newsVideoUrl" type="url" inputmode="url" placeholder="https://youtu.be/... أو https://www.youtube.com/watch?v=..."></label><small class="hint">اختر صورة أو فيديو فقط. اترك أحد الخيارين فارغاً.</small>
+            <label>صورة الخبر (اختياري)<input id="newsImageFile" type="file" accept="image/*"></label><div id="newsImagePreviewWrap" class="news-upload-preview hidden"><img id="newsImagePreview" alt="معاينة صورة الخبر"><button type="button" id="clearNewsImage" class="btn btn-ghost">🗑 إزالة الصورة</button></div><small class="hint">اختر صورة، أو الصق رابط فيديو YouTube أو Facebook أو TikTok أدناه. لا يمكن إضافة الصورة والفيديو معاً.</small><label>رابط فيديو YouTube (اختياري)<input id="newsVideoUrl" type="url" inputmode="url" placeholder="رابط YouTube أو Facebook أو TikTok"></label><small class="hint">اختر صورة أو فيديو فقط. اترك أحد الخيارين فارغاً.</small>
             <button class="btn btn-primary">نشر الخبر</button><p class="message" id="newsMessage"></p>
           </form>
           <div id="newsAdminList" class="records-list"></div>
