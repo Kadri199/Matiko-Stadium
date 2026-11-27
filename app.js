@@ -187,7 +187,8 @@ function renderHomepageNews(snapshot) {
       else if(videoType==="instagram"){try{const u=new URL(item.videoUrl);const parts=u.pathname.split("/").filter(Boolean);if(["reel","reels","p","tv"].includes(parts[0])&&parts[1])embedUrl="https://www.instagram.com/"+parts[0]+"/"+parts[1]+"/embed/";}catch(_){}}
       if(embedUrl){
         const videoWrap=document.createElement("div");
-        const portrait=videoType==="tiktok"||videoType==="instagram";
+        const orientation=item.videoOrientation||"auto";
+        const portrait=orientation==="portrait"||(orientation==="auto"&&(videoType==="tiktok"||videoType==="instagram"));
         videoWrap.className="news-video-wrap "+(portrait?"news-video-portrait":"news-video-wide");
         const frame=document.createElement("iframe");
         frame.className="news-video";
