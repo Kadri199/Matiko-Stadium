@@ -11,3 +11,28 @@
 .record-actions{display:flex;flex-flow:row nowrap;align-items:center;gap:5px;white-space:nowrap}
 .record-actions button{white-space:nowrap;flex:1 1 0;min-width:0;padding:5px 5px;font-size:10px}
 @media(max-width:560px){.record-actions{width:100%;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden}.record-actions button{flex:1 1 0;min-width:max-content;padding:5px 6px;font-size:10px}}
+
+
+/* Booking decision buttons: car-indicator style confirmation flashes. */
+.booking-indicator-green{
+  border:3px solid #16a34a!important;
+  color:#075b2c!important;
+  background:#eaffef!important;
+  box-shadow:0 0 0 2px #16a34a55,0 0 12px 4px #22c55eaa!important;
+  animation:bookingGreenBlink .32s ease-in-out 5;
+}
+.booking-indicator-red{
+  border:3px solid #dc2626!important;
+  color:#991b1b!important;
+  background:#fff0f0!important;
+  box-shadow:0 0 0 2px #dc262655,0 0 12px 4px #ef4444aa!important;
+  animation:bookingRedBlink .32s ease-in-out 5;
+}
+@keyframes bookingGreenBlink{
+  0%,100%{opacity:1;box-shadow:0 0 0 2px #16a34a55,0 0 14px 5px #22c55eaa}
+  50%{opacity:.42;box-shadow:0 0 0 1px #16a34a22,0 0 3px 1px #22c55e33}
+}
+@keyframes bookingRedBlink{
+  0%,100%{opacity:1;box-shadow:0 0 0 2px #dc262655,0 0 14px 5px #ef4444aa}
+  50%{opacity:.42;box-shadow:0 0 0 1px #dc262622,0 0 3px 1px #ef444433}
+}
