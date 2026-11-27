@@ -119,6 +119,30 @@ service cloud.firestore {
     }
 
 
+    // Private messages are available only after a challenge is accepted.
+    // The two participating teams and the stadium owner can read and send messages.
+    match /challenges/{challengeId}/messages/{messageId} {
+      function canAccessChallengeChat() {
+        return isOwner() || (signedIn()
+          && get(/databases/$(database)/documents/challenges/$(challengeId)).data.status == "accepted"
+          && (
+            get(/databases/$(database)/documents/challenges/$(challengeId)).data.teamUid == request.auth.uid
+            || get(/databases/$(database)/documents/challenges/$(challengeId)).data.acceptedByUid == request.auth.uid
+          ));
+      }
+      allow read: if canAccessChallengeChat();
+      allow create: if canAccessChallengeChat()
+        && request.resource.data.senderUid == request.auth.uid
+        && request.resource.data.senderName is string
+        && request.resource.data.senderName.size() > 0
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 1000
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.keys().hasOnly(["senderUid","senderName","text","createdAt"]);
+      allow update, delete: if false;
+    }
+
     // Public append-only leaderboards for the two lightweight stadium games.
     match /gameScores/{game}/entries/{entryId} {
       allow read: if game in ["penalty", "crossbar", "players"];
