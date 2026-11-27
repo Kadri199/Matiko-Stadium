@@ -1,7 +1,7 @@
 import { auth, db } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 import {
-  collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, updateDoc, serverTimestamp
+  collection, doc, getDocs, getDoc, addDoc, setDoc, deleteDoc, updateDoc, serverTimestamp, onSnapshot
 } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
 const OWNER_UID = "hU0pqkyVYMYhBQ5GBAPHcHemph23";
@@ -83,6 +83,8 @@ function openScorersEditor(team1, team2, current1, current2) {
 const availableClubCrests = [["Real Madrid","https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"],["Barcelona","https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg"],["Manchester United","https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg"],["Liverpool","https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg"],["Manchester City","https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg"],["Arsenal","https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg"],["Chelsea","https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg"],["Tottenham","https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg"],["Bayern Munich","https://upload.wikimedia.org/wikipedia/en/1/1f/FC_Bayern_München_logo_%282017%29.svg"],["Borussia Dortmund","https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg"],["Paris Saint-Germain","https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg"],["Juventus","https://upload.wikimedia.org/wikipedia/commons/1/15/Juventus_FC_2017_logo.svg"],["Inter Milan","https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg"],["AC Milan","https://upload.wikimedia.org/wikipedia/commons/d/d0/Logo_of_AC_Milan.svg"],["Atletico Madrid","https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg"],["Ajax","https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg"],["CS Constantine","https://assets.football-logos.cc/logos/algeria/256x256/cs-constantine.7736f860.png"],["MC Alger","https://assets.football-logos.cc/logos/algeria/256x256/mc-alger.07948633.png"],["CR Belouizdad","https://assets.football-logos.cc/logos/algeria/256x256/cr-belouizdad.c27becc8.png"],["ES Sétif","https://assets.football-logos.cc/logos/algeria/256x256/es-setif.9dbc0932.png"]];
 
 let adminTeamProfiles=[];
+let teamDirectoryUnsubscribe=null;
+function watchPublicTeamDirectory(){if(teamDirectoryUnsubscribe)return;teamDirectoryUnsubscribe=onSnapshot(collection(db,"teamDirectory"),snapshot=>{adminTeamProfiles=snapshot.docs.map(d=>({uid:d.id,fullName:String(d.data().fullName||"").trim()})).filter(x=>x.fullName);setupAdminTeamSelects();},error=>console.error("Could not watch public team directory:",error));}
 function sortedTeamNames(){return [...new Set(adminTeamProfiles.map(x=>String(x.fullName||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar"));}
 function fillAdminTeamSelect(select){if(!select)return;select.innerHTML="";const other=document.createElement("option");other.value="__other__";other.textContent="فريق آخر";select.appendChild(other);sortedTeamNames().forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;select.appendChild(option);});toggleAdminOther(select);}
 function toggleAdminOther(select){const input=$(select.id+"Other"),wrap=$(select.id+"OtherWrap");if(!input)return;const custom=select.value==="__other__";wrap?.classList.toggle("hidden",!custom);input.required=custom;if(!custom)input.value="";}
@@ -332,6 +334,7 @@ async function loadAll(){
   if(!ownerReady)return;
   try{
     await syncPublicTeamDirectory();
+    watchPublicTeamDirectory();
     const [users,results,news]=await Promise.all([
       loadCollection("users","usersAdminList","users"),
       loadCollection("results","resultsAdminList","results"),
