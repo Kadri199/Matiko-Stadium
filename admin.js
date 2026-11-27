@@ -84,11 +84,45 @@ const availableClubCrests = [["Real Madrid","https://upload.wikimedia.org/wikipe
 
 let adminTeamProfiles=[];
 let teamDirectoryUnsubscribe=null;
-function watchPublicTeamDirectory(){if(teamDirectoryUnsubscribe)return;teamDirectoryUnsubscribe=onSnapshot(collection(db,"teamDirectory"),snapshot=>{adminTeamProfiles=snapshot.docs.map(d=>({uid:d.id,fullName:String(d.data().fullName||"").trim()})).filter(x=>x.fullName);setupAdminTeamSelects();},error=>console.error("Could not watch public team directory:",error));}
+function watchPublicTeamDirectory(){
+  if(teamDirectoryUnsubscribe)return;
+  // Read the authoritative team profiles directly. Do not depend on the
+  // optional public mirror collection to populate either admin dropdown.
+  teamDirectoryUnsubscribe=onSnapshot(collection(db,"users"),snapshot=>{
+    adminTeamProfiles=snapshot.docs
+      .filter(d=>d.data().role==="team"&&String(d.data().fullName||"").trim())
+      .map(d=>({uid:d.id,fullName:String(d.data().fullName).trim()}));
+    setupAdminTeamSelects();
+  },error=>console.error("Could not watch registered team profiles:",error));
+}
 function sortedTeamNames(){return [...new Set(adminTeamProfiles.map(x=>String(x.fullName||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar"));}
-function fillAdminTeamSelect(select,placeholder){if(!select)return;const previous=select.value;select.innerHTML="";const first=document.createElement("option");first.value="";first.textContent=placeholder;select.appendChild(first);const names=sortedTeamNames();names.forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;select.appendChild(option);});if(names.includes(previous))select.value=previous;}
-function setupAdminTeamSelects(){fillAdminTeamSelect($("adminBookTeam1"),"اختر الفريق الأول");fillAdminTeamSelect($("adminBookTeam2"),"اختر الفريق الثاني");}
-async function syncPublicTeamDirectory(){const users=await getDocs(collection(db,"users"));const teams=users.docs.filter(d=>d.data().role==="team"&&String(d.data().fullName||"").trim());adminTeamProfiles=teams.map(d=>({uid:d.id,fullName:d.data().fullName}));await Promise.all(teams.map(d=>setDoc(doc(db,"teamDirectory",d.id),{fullName:String(d.data().fullName).trim(),updatedAt:serverTimestamp()},{merge:true})));setupAdminTeamSelects();}
+function fillAdminTeamSelect(select,placeholder){
+  if(!select)return;
+  const previous=select.value;
+  select.innerHTML="";
+  const first=document.createElement("option");
+  first.value="";first.textContent=placeholder;select.appendChild(first);
+  const names=sortedTeamNames();
+  names.forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;select.appendChild(option);});
+  if(names.includes(previous))select.value=previous;
+}
+function setupAdminTeamSelects(){
+  fillAdminTeamSelect($("adminBookTeam1"),"اختر الفريق الأول");
+  fillAdminTeamSelect($("adminBookTeam2"),"اختر الفريق الثاني");
+}
+async function syncPublicTeamDirectory(){
+  const users=await getDocs(collection(db,"users"));
+  const teams=users.docs.filter(d=>d.data().role==="team"&&String(d.data().fullName||"").trim());
+  adminTeamProfiles=teams.map(d=>({uid:d.id,fullName:String(d.data().fullName).trim()}));
+  // Populate BOTH controls immediately, before any optional mirror writes.
+  setupAdminTeamSelects();
+  // Keep the public directory in sync when rules permit; this is not required
+  // for the admin booking form to work.
+  for(const d of teams){
+    setDoc(doc(db,"teamDirectory",d.id),{fullName:String(d.data().fullName).trim(),updatedAt:serverTimestamp()},{merge:true})
+      .catch(error=>console.warn("Team directory mirror was not updated:",error));
+  }
+}
 function setResultTimeOptions(times, selected="") {
   const select=$("resultTime");
   if(!select)return;
