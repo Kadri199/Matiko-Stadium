@@ -294,7 +294,9 @@ async function loadBookings(){
     // Owner can approve any request, or disapprove it to release the slot back to green.
     const actionOptions = d.status === "approved"
       ? [["rejected","إلغاء الموافقة (إعادة إلى الأخضر)"]]
-      : [["approved","موافقة (تحويل إلى الأحمر)"],["rejected","عدم الموافقة (إبقاء الموعد أخضر)"]];
+      : d.status === "rejected"
+        ? [["approved","موافقة (تحويل إلى الأحمر)"]]
+        : [["approved","موافقة (تحويل إلى الأحمر)"],["rejected","عدم الموافقة (إبقاء الموعد أخضر)"]];
     for(const [status,label] of actionOptions){
       const btn=document.createElement("button");
       btn.className=status==="approved"?"btn btn-primary":"danger-btn";
@@ -307,9 +309,7 @@ async function loadBookings(){
             const conflict=allBookings.docs.some(x=>x.id!==item.id&&normalizeBookingValue(x.data().day)===normalizeBookingValue(d.day)&&normalizeBookingValue(x.data().time)===normalizeBookingValue(d.time)&&x.data().status==="approved");
             if(conflict) throw new Error("هذا الموعد محجوز بالفعل. اختر طلباً آخر.");
           }
-          if(status==="rejected")btn.classList.add("booking-indicator-red");
           await updateDoc(doc(db,"bookings",item.id),{status,reviewedAt:serverTimestamp()});
-          await new Promise(resolve=>setTimeout(resolve,1500));
           await loadBookings();
         }catch(e){alert("تعذر تحديث الطلب: "+e.message);btn.disabled=false;}
       });
