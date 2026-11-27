@@ -285,7 +285,7 @@ async function loadBookings(){
   if(!docs.length){host.innerHTML='<div class="empty-state">لا توجد طلبات حجز حتى الآن.</div>';return;}
   docs.forEach(item=>{
     const d=item.data(),card=document.createElement("article");card.className="record booking-record";
-    const bin=document.createElement("button");bin.type="button";bin.className="booking-delete-btn";bin.textContent="حذف";bin.title="حذف طلب الحجز";bin.setAttribute("aria-label","حذف طلب الحجز");
+    const bin=document.createElement("button");bin.type="button";bin.className="booking-delete-btn";bin.textContent="حذف";bin.title="حذف طلب الحجز";Object.assign(bin.style,{minWidth:"58px",padding:"6px 14px",display:"inline-grid",placeItems:"center",alignSelf:"center",border:"1px solid #b91c1c",borderRadius:"14px",backgroundColor:"#dc2626",color:"#ffeb3b",fontSize:"13px",fontWeight:"900",lineHeight:"1.5",cursor:"pointer",flex:"0 0 auto",boxShadow:"0 2px 5px #991b1b55"});bin.setAttribute("aria-label","حذف طلب الحجز");
     bin.addEventListener("click",async()=>{if(!confirm("هل تريد حذف طلب الحجز نهائياً؟ لا يمكن التراجع عن هذا الإجراء."))return;bin.disabled=true;try{await deleteDoc(doc(db,"bookings",item.id));await loadBookings();}catch(error){alert("تعذر حذف طلب الحجز: "+error.message);bin.disabled=false;}});
     const content=document.createElement("div"),title=document.createElement("h3"),detail=document.createElement("p");
     title.textContent=(d.teamName||"فريق")+" × "+(d.opponentName||"فريق منافس");
