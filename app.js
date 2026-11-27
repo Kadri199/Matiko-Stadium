@@ -503,19 +503,33 @@ onSnapshot(collection(db, "news"), renderHomepageNews, error => {
 });
 
 onSnapshot(doc(db, "settings", "about"), snapshot => {
-  if (!snapshot.exists()) return;
-  const data = snapshot.data();
+  const data = snapshot.exists() ? snapshot.data() : {};
   const description = $("aboutDescriptionHome");
   const contact = $("aboutContactHome");
   const mapLink = $("aboutGoogleMapsHome");
   if (mapLink) {
-    const mapUrl = String(data.googleMapsUrl || "").trim();
-    if (mapUrl && /^https?:\/\//i.test(mapUrl)) {
-      mapLink.href = mapUrl;
-      mapLink.classList.remove("hidden");
-    } else {
+    let mapUrl = String(data.googleMapsUrl || "").trim();
+    if (mapUrl && !/^https?:\/\//i.test(mapUrl)) mapUrl = "https://" + mapUrl;
+    try {
+      const parsedMapUrl = mapUrl ? new URL(mapUrl) : null;
+      if (parsedMapUrl && (parsedMapUrl.protocol === "https:" || parsedMapUrl.protocol === "http:")) {
+        mapLink.href = parsedMapUrl.href;
+        mapLink.target = "_blank";
+        mapLink.rel = "noopener noreferrer";
+        mapLink.classList.remove("hidden");
+        mapLink.hidden = false;
+        mapLink.style.display = "inline-flex";
+      } else {
+        mapLink.removeAttribute("href");
+        mapLink.classList.add("hidden");
+        mapLink.hidden = true;
+        mapLink.style.display = "none";
+      }
+    } catch {
       mapLink.removeAttribute("href");
       mapLink.classList.add("hidden");
+      mapLink.hidden = true;
+      mapLink.style.display = "none";
     }
   }
 
