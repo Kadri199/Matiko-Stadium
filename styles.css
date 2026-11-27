@@ -127,3 +127,20 @@
   .site-header nav .nav-line a{flex:0 0 auto;padding:6px 3px}
   .site-header nav .nav-line-secondary a{padding:5px 13px}
 }
+
+
+/* Enforce the two-row header navigation layout on desktop and mobile. */
+@media(min-width:761px){
+  .site-header{min-height:94px;height:auto}
+  .nav-wrap{min-height:94px;height:auto;align-items:center}
+  .site-header nav{flex:1 1 auto;min-width:0;width:auto;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important}
+  .site-header nav .nav-line{width:100%;display:flex!important;flex:0 0 100%;align-items:center;justify-content:center;gap:clamp(10px,1.5vw,22px);white-space:nowrap}
+  .site-header nav .nav-line-primary{order:1}
+  .site-header nav .nav-line-secondary{order:2}
+}
+@media(max-width:760px){
+  .site-header nav{flex-direction:column!important;align-items:stretch!important}
+  .site-header nav .nav-line{display:flex!important;flex-direction:row!important;width:100%;min-height:36px}
+  .site-header nav .nav-line-primary{order:1}
+  .site-header nav .nav-line-secondary{order:2;border-top:1px solid #ffffff20;margin-top:3px;padding-top:8px}
+}
