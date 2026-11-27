@@ -408,6 +408,14 @@ function renderHomepageResults(snapshot) {
       return crest;
     };
     const team1 = makeTeam(item.team1, "home");
+    const team2 = makeTeam(item.team2, "away");
+    const homeScore = Number(item.score1);
+    const awayScore = Number(item.score2);
+    if (Number.isFinite(homeScore) && Number.isFinite(awayScore) && homeScore !== awayScore) {
+      const winnerTeam = homeScore > awayScore ? team1 : team2;
+      const winnerCrest = winnerTeam.querySelector(".broadcast-crest-img, .broadcast-crest");
+      if (winnerCrest) winnerCrest.classList.add("broadcast-winner-crest");
+    }
     const score = document.createElement("div");
     score.className = "broadcast-score";
     const numbers = document.createElement("strong");
@@ -415,7 +423,6 @@ function renderHomepageResults(snapshot) {
     const fullTime = document.createElement("span");
     fullTime.textContent = "FULL TIME";
     score.append(numbers, fullTime);
-    const team2 = makeTeam(item.team2, "away");
     scoreRow.append(team1, score, team2);
 
     const scorerTitle = document.createElement("div");
