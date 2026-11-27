@@ -25,7 +25,7 @@ async function photoFor(entry){
    const response=await fetch("https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch="+q+"&gsrnamespace=0&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=640&format=json&origin=*");
    if(response.ok){const data=await response.json();const page=Object.values(data.query?.pages||{})[0];if(page?.thumbnail?.source)return page.thumbnail.source;}
   }catch(e){}
-  return "https://placehold.co/640x640/102a36/ffffff?text="+encodeURIComponent(entry.name);
+  return null;
  })();
  photoCache.set(entry.name,task);return task;
 }
@@ -56,18 +56,45 @@ function optionsFor(p){
  lastCorrectIndex=correct;return choices;
 }
 onSnapshot(query(collection(db,"gameScores","players","entries"),orderBy("score","desc"),limit(10)),snap=>{const list=$("top10");list.replaceChildren();snap.docs.forEach((doc,i)=>{const d=doc.data(),li=document.createElement("li"),rank=document.createElement("span"),name=document.createElement("span"),points=document.createElement("b");rank.textContent=["🥇","🥈","🥉"][i]||String(i+1);name.textContent=d.name||"لاعب";points.textContent=(d.score||0)+" نقطة";li.append(rank,name,points);list.append(li)})},console.warn);
+function preloadPhoto(src){
+ return new Promise(resolve=>{
+  if(!src){resolve(false);return;}
+  const img=new Image();let settled=false;
+  const finish=ok=>{if(settled)return;settled=true;img.onload=null;img.onerror=null;clearTimeout(timer);resolve(ok)};
+  const timer=setTimeout(()=>finish(false),12000);
+  img.onload=()=>finish(img.naturalWidth>0&&img.naturalHeight>0);
+  img.onerror=()=>finish(false);
+  img.src=src;
+ });
+}
 async function render(){
- locked=false;current=nextEntry();number++;
+ locked=true;
  $("quizFinish").classList.add("hidden");
+ $("playerOptions").replaceChildren();
+ $("playerPhoto").removeAttribute("src");
+ $("quizFeedback").textContent="جارٍ تحميل الصورة...";
+ $("quizFeedback").className="players-feedback";
+ let entry=null,src=null;
+ for(let attempt=0;attempt<30;attempt++){
+  const candidate=nextEntry();
+  const candidateSrc=await photoFor(candidate);
+  if(candidateSrc&&await preloadPhoto(candidateSrc)){entry=candidate;src=candidateSrc;break;}
+ }
+ if(!entry){
+  current=null;
+  $("playerPhoto").alt="تعذر تحميل الصورة";
+  $("quizFeedback").textContent="تعذر تحميل الصور حالياً. تحقق من اتصال الإنترنت ثم أعد تحميل الصفحة.";
+  return;
+ }
+ current=entry;number++;locked=false;
  $("questionNo").textContent=number;$("currentScore").textContent=score;$("correctCount").textContent=score;
  $("progressBar").style.width=((score%20)/20*100)+"%";
- $("playerPhoto").src="https://placehold.co/640x640/102a36/ffffff?text="+encodeURIComponent("Loading...");
+ $("playerPhoto").src=src;
  $("playerPhoto").alt="صورة "+current.name;
  $("quizFeedback").textContent=(current.category==="player"?"من هو هذا اللاعب؟":current.category==="animal"?"ما اسم هذا الحيوان؟":"من هو هذا المدرب؟")+" — "+stageNames[stageIndex]+" | مستوى: "+(current.level==="easy"?"سهل":current.level==="medium"?"متوسط":"صعب");
  $("quizFeedback").className="players-feedback";
  const box=$("playerOptions");box.replaceChildren();
  optionsFor(current).forEach(opt=>{const b=document.createElement("button");b.className="player-option";b.type="button";b.textContent=opt.name;b.addEventListener("click",()=>answer(b,opt===current));box.append(b)});
- const entry=current;const src=await photoFor(entry);if(current===entry)$("playerPhoto").src=src;
 }
 function answer(button,correct){if(locked)return;locked=true;const buttons=[...$("playerOptions").querySelectorAll("button")];buttons.forEach(b=>{b.disabled=true;if(b.textContent===current.name)b.classList.add("correct")});if(correct){score++;$("quizFeedback").textContent="إجابة صحيحة! +1 ⚽";$("quizFeedback").classList.add("good");$("currentScore").textContent=score;$("correctCount").textContent=score;setTimeout(render,850)}else{button.classList.add("wrong");$("quizFeedback").textContent="إجابة خاطئة! انتهت اللعبة."; $("quizFeedback").classList.add("bad");$("finalScore").textContent="نتيجتك: "+score+" نقطة بعد "+number+" سؤالاً. اكتب اسمك لدخول أفضل 10.";$("saveStatus").textContent="";$("playerName").value="";$("saveScore").disabled=false;$("saveScore").textContent="سجّل نتيجتي";setTimeout(()=>{$("quizFinish").classList.remove("hidden");$("quizFinish").classList.add("is-open");$("playerName").focus({preventScroll:true})},550)}}
 let scoreSaved=false;$("saveScore").addEventListener("click",async()=>{if(scoreSaved)return;const name=$("playerName").value.trim().replace(/\s+/g," ");if(name.length<2||name.length>24){$("saveStatus").textContent="اكتب اسماً صحيحاً من حرفين إلى 24 حرفاً.";return}const btn=$("saveScore");btn.disabled=true;try{await addDoc(collection(db,"gameScores","players","entries"),{name,score,createdAt:serverTimestamp()});scoreSaved=true;$("saveStatus").textContent="تم تسجيل نتيجتك في أفضل 10! اضغط «العب من جديد» للمحاولة مرة أخرى.";$("saveScore").textContent="تم حفظ النتيجة";}catch(e){$("saveStatus").textContent="تعذر الحفظ. تحقق من الاتصال وحاول مجدداً.";$("saveScore").disabled=false}});
