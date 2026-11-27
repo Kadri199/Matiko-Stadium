@@ -28,6 +28,17 @@ service cloud.firestore {
       allow update, delete: if isOwner();
     }
 
+    // Public directory exposes team names only, never emails or account details.
+    match /teamDirectory/{teamId} {
+      allow read: if true;
+      allow create: if isOwner() || (signedIn()
+        && request.auth.uid == teamId
+        && request.resource.data.keys().hasOnly(["fullName","updatedAt"])
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() > 1);
+      allow update, delete: if isOwner();
+    }
+
     // Publicly readable site content; only the owner can publish or edit it.
     match /news/{document=**} {
       allow read: if true;
@@ -49,7 +60,7 @@ service cloud.firestore {
           && exists(/databases/$(database)/documents/users/$(request.auth.uid))
           && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "team";
       }
-      allow create: if isTeam()
+      allow create: if isOwner() || (isTeam()
         && request.resource.data.teamUid == request.auth.uid
         && request.resource.data.teamEmail == request.auth.token.email
         && request.resource.data.teamName is string
@@ -60,7 +71,7 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly([
           "teamUid", "teamEmail", "teamName", "opponentName",
           "day", "time", "note", "status", "createdAt"
-        ]);
+        ]));
       // Homepage may LIST only approved bookings; pending/rejected requests stay private.
       // The owner can list every booking, and each team can read its own booking.
       allow get: if isOwner() || resource.data.status == "approved" || (signedIn() && resource.data.teamUid == request.auth.uid);
