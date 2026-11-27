@@ -1,0 +1,11 @@
+{
+  "name": "Matiko Stadium",
+  "short_name": "Matiko",
+  "description": "التطبيق الرسمي للملعب الجواري أولاد مبارك",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b3d2e",
+  "theme_color": "#0b3d2e"
+}
