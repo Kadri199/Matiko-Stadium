@@ -183,3 +183,11 @@
  .hero-actions-secondary{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
  .hero-actions-primary .btn,.hero-actions-secondary .btn{width:100%!important;min-width:0!important;min-height:46px!important;padding:8px 5px!important;font-size:clamp(10px,2.4vw,13px)!important;white-space:nowrap!important;border-radius:11px!important}
 }
+
+
+/* A subtle, permanent gold glow marks only the winning team's crest. */
+.broadcast-winner-crest{
+  border-color:#f4d77a!important;
+  filter:drop-shadow(0 0 3px #f6d875aa) drop-shadow(0 0 8px #eabf4d66)!important;
+  box-shadow:0 0 5px #f6d87566,0 0 11px #eabf4d44!important;
+}
