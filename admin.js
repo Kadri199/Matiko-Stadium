@@ -86,9 +86,8 @@ let adminTeamProfiles=[];
 let teamDirectoryUnsubscribe=null;
 function watchPublicTeamDirectory(){if(teamDirectoryUnsubscribe)return;teamDirectoryUnsubscribe=onSnapshot(collection(db,"teamDirectory"),snapshot=>{adminTeamProfiles=snapshot.docs.map(d=>({uid:d.id,fullName:String(d.data().fullName||"").trim()})).filter(x=>x.fullName);setupAdminTeamSelects();},error=>console.error("Could not watch public team directory:",error));}
 function sortedTeamNames(){return [...new Set(adminTeamProfiles.map(x=>String(x.fullName||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar"));}
-function fillAdminTeamSelect(select){if(!select)return;select.innerHTML="";const other=document.createElement("option");other.value="__other__";other.textContent="فريق آخر";select.appendChild(other);sortedTeamNames().forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;select.appendChild(option);});toggleAdminOther(select);}
-function toggleAdminOther(select){const input=$(select.id+"Other"),wrap=$(select.id+"OtherWrap");if(!input)return;const custom=select.value==="__other__";wrap?.classList.toggle("hidden",!custom);input.required=custom;if(!custom)input.value="";}
-function setupAdminTeamSelects(){["adminBookTeam1","adminBookTeam2"].forEach(id=>{const select=$(id);fillAdminTeamSelect(select);select.onchange=()=>toggleAdminOther(select);});}
+function fillAdminTeamSelect(select,placeholder){if(!select)return;const previous=select.value;select.innerHTML="";const first=document.createElement("option");first.value="";first.textContent=placeholder;select.appendChild(first);const names=sortedTeamNames();names.forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;select.appendChild(option);});if(names.includes(previous))select.value=previous;}
+function setupAdminTeamSelects(){fillAdminTeamSelect($("adminBookTeam1"),"اختر الفريق الأول");fillAdminTeamSelect($("adminBookTeam2"),"اختر الفريق الثاني");}
 async function syncPublicTeamDirectory(){const users=await getDocs(collection(db,"users"));const teams=users.docs.filter(d=>d.data().role==="team"&&String(d.data().fullName||"").trim());adminTeamProfiles=teams.map(d=>({uid:d.id,fullName:d.data().fullName}));await Promise.all(teams.map(d=>setDoc(doc(db,"teamDirectory",d.id),{fullName:String(d.data().fullName).trim(),updatedAt:serverTimestamp()},{merge:true})));setupAdminTeamSelects();}
 function setResultTimeOptions(times, selected="") {
   const select=$("resultTime");
@@ -434,8 +433,8 @@ $("logoutBtn").addEventListener("click",async()=>{await signOut(auth);location.h
 
 $("adminBookingForm").addEventListener("submit",async e=>{
  e.preventDefault();if(!ownerReady)return;
- const team1=$("adminBookTeam1").value==="__other__"?$("adminBookTeam1Other").value.trim():$("adminBookTeam1").value;
- const team2=$("adminBookTeam2").value==="__other__"?$("adminBookTeam2Other").value.trim():$("adminBookTeam2").value;
+ const team1=$("adminBookTeam1").value.trim();
+ const team2=$("adminBookTeam2").value.trim();
  const day=$("adminBookDay").value,time=$("adminBookTime").value;
  if(!team1||!team2||team1===team2){message("adminBookingMessage","يرجى اختيار فريقين مختلفين أو إدخال اسميهما.",true);return;}
  try{
