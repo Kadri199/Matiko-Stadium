@@ -307,7 +307,9 @@ async function loadBookings(){
             const conflict=allBookings.docs.some(x=>x.id!==item.id&&normalizeBookingValue(x.data().day)===normalizeBookingValue(d.day)&&normalizeBookingValue(x.data().time)===normalizeBookingValue(d.time)&&x.data().status==="approved");
             if(conflict) throw new Error("هذا الموعد محجوز بالفعل. اختر طلباً آخر.");
           }
+          btn.classList.add(status==="approved"?"booking-indicator-green":"booking-indicator-red");
           await updateDoc(doc(db,"bookings",item.id),{status,reviewedAt:serverTimestamp()});
+          await new Promise(resolve=>setTimeout(resolve,1500));
           await loadBookings();
         }catch(e){alert("تعذر تحديث الطلب: "+e.message);btn.disabled=false;}
       });
