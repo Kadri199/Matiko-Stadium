@@ -499,7 +499,7 @@ onSnapshot(doc(db, "settings", "about"), snapshot => {
     if (data.phone && String(data.phone).trim()) {
       const phoneItem = document.createElement("a");
       phoneItem.className = "about-contact-item";
-      phoneItem.href = "tel:" + String(data.phone).trim().replace(/[^+\\d]/g, "");
+      phoneItem.href = "tel:" + String(data.phone).trim().replace(/[^+\d]/g, "");
       phoneItem.textContent = "📞 " + String(data.phone).trim();
       phoneItem.setAttribute("aria-label", "اتصل بالملعب هاتفياً");
       contact.appendChild(phoneItem);
@@ -508,7 +508,7 @@ onSnapshot(doc(db, "settings", "about"), snapshot => {
       const facebookItem = document.createElement("a");
       facebookItem.className = "about-contact-item";
       let groupUrl = String(data.facebookGroup).trim();
-      if (!/^https?:\\/\\//i.test(groupUrl)) groupUrl = "https://" + groupUrl;
+      if (!/^https?:\/\//i.test(groupUrl)) groupUrl = "https://" + groupUrl;
       facebookItem.href = groupUrl;
       facebookItem.target = "_blank";
       facebookItem.rel = "noopener noreferrer";
