@@ -287,13 +287,13 @@ async function loadBookings(){
     const d=item.data(),card=document.createElement("article");card.className="record booking-record";
     const bin=document.createElement("button");bin.type="button";bin.className="booking-delete-btn";bin.textContent="🗑";bin.title="حذف طلب الحجز";bin.setAttribute("aria-label","حذف طلب الحجز");
     bin.addEventListener("click",async()=>{if(!confirm("هل تريد حذف طلب الحجز نهائياً؟ لا يمكن التراجع عن هذا الإجراء."))return;bin.disabled=true;try{await deleteDoc(doc(db,"bookings",item.id));await loadBookings();}catch(error){alert("تعذر حذف طلب الحجز: "+error.message);bin.disabled=false;}});
-    card.appendChild(bin);
     const content=document.createElement("div"),title=document.createElement("h3"),detail=document.createElement("p");
     title.textContent=(d.teamName||"فريق")+" × "+(d.opponentName||"فريق منافس");
     const statusText=d.status==="approved"?"تمت الموافقة":d.status==="rejected"?"مرفوض":"قيد الانتظار";
     detail.textContent="اليوم: "+d.day+" | الساعة: "+d.time+" | الحالة: "+statusText+(d.note?" | ملاحظة: "+d.note:"")+" | البريد: "+(d.teamEmail||"");
     content.append(title,detail);card.append(content);
     const actions=document.createElement("div");actions.className="record-actions";
+    actions.appendChild(bin);
     // Owner can approve any request, or disapprove it to release the slot back to green.
     const actionOptions = d.status === "approved"
       ? [["rejected","إلغاء الموافقة (إعادة إلى الأخضر)"]]
