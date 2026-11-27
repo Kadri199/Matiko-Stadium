@@ -185,7 +185,21 @@ function renderHomepageNews(snapshot) {
       else if(videoType==="facebook")embedUrl="https://www.facebook.com/plugins/video.php?href="+encodeURIComponent(item.videoUrl)+"&show_text=false&width=560";
       else if(videoType==="tiktok"){const match=item.videoUrl.match(/\/video\/(\d+)/);if(match)embedUrl="https://www.tiktok.com/player/v1/"+match[1];}
       else if(videoType==="instagram"){try{const u=new URL(item.videoUrl);const parts=u.pathname.split("/").filter(Boolean);if(["reel","reels","p","tv"].includes(parts[0])&&parts[1])embedUrl="https://www.instagram.com/"+parts[0]+"/"+parts[1]+"/embed/";}catch(_){}}
-      if(embedUrl){const frame=document.createElement("iframe");frame.className="news-video";frame.src=embedUrl;frame.title=item.title||"فيديو من الملعب";frame.loading="lazy";frame.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";frame.referrerPolicy="strict-origin-when-cross-origin";frame.allowFullscreen=true;card.appendChild(frame);}
+      if(embedUrl){
+        const videoWrap=document.createElement("div");
+        const portrait=videoType==="tiktok"||videoType==="instagram";
+        videoWrap.className="news-video-wrap "+(portrait?"news-video-portrait":"news-video-wide");
+        const frame=document.createElement("iframe");
+        frame.className="news-video";
+        frame.src=embedUrl;
+        frame.title=item.title||"فيديو من الملعب";
+        frame.loading="lazy";
+        frame.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        frame.referrerPolicy="strict-origin-when-cross-origin";
+        frame.allowFullscreen=true;
+        videoWrap.appendChild(frame);
+        card.appendChild(videoWrap);
+      }
     } else if (item.imageUrl) {
       const img = document.createElement("img");
       img.className = "news-image";
