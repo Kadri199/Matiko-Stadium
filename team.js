@@ -61,13 +61,13 @@ function challengeCard(item, own=false) {
   const meta=document.createElement("div"); meta.className="meta"; meta.textContent="📅 "+d.day+"   •   🕒 "+d.time;
   const note=document.createElement("p"); note.textContent=d.note||"لا توجد ملاحظة.";
   card.append(tag,title,meta,note);
+  const actions=document.createElement("div");actions.className="card-actions";
   if(accepted){
     const acceptedLine=document.createElement("p");acceptedLine.textContent="الفريق المنافس: "+(d.acceptedByName||"فريق مشارك");card.append(acceptedLine);
     const chat=document.createElement("button");chat.type="button";chat.className="btn btn-primary";chat.textContent="💬 فتح المحادثة";
     chat.addEventListener("click",()=>openChallengeChat(item.id,(d.teamName||"فريق")+" × "+(d.acceptedByName||"فريق مشارك"),profile.fullName||"الفريق"));
     actions.append(chat);
   }
-  const actions=document.createElement("div");actions.className="card-actions";
   if(!own&&!accepted&&d.teamUid!==currentUser.uid){
     const btn=document.createElement("button");btn.className="btn btn-primary";btn.textContent="قبول التحدي";
     btn.addEventListener("click",async()=>{
