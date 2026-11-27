@@ -490,7 +490,7 @@ $("newsForm").addEventListener("submit",async e=>{
     const enteredVideoUrl=newsVideoInput.value.trim();
     let videoOrientation="auto";
     if(selectedNewsImage&&enteredVideoUrl)throw new Error("اختر صورة أو فيديو فقط، وليس الاثنين معاً.");
-    if(enteredVideoUrl){const parsed=parseNewsVideoUrl(enteredVideoUrl);videoUrl=parsed.url;videoType=parsed.type;videoOrientation=$("newsVideoOrientation").value||"auto";}
+    if(enteredVideoUrl){const parsed=parseNewsVideoUrl(enteredVideoUrl);videoUrl=parsed.url;videoType=parsed.type;videoOrientation=document.querySelector("input[name=\"newsVideoOrientation\"]:checked")?.value||"portrait";}
     if(selectedNewsImage){
       message("newsMessage","جارٍ رفع الصورة...");
       imageUrl=await uploadNewsImage(selectedNewsImage);
