@@ -350,10 +350,11 @@ async function loadAll(){
     }
   }catch(e){$("accessMessage").textContent="تعذر تحميل بيانات اللوحة: "+e.message;}
 }
-document.querySelectorAll(".nav-item").forEach(btn=>btn.addEventListener("click",()=>{
-  document.querySelectorAll(".nav-item").forEach(x=>x.classList.toggle("active",x===btn));
-  document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("active",x.id==="panel-"+btn.dataset.panel));
-}));
+function activateAdminPanel(name){
+  document.querySelectorAll(".nav-item").forEach(x=>x.classList.toggle("active",x.dataset.panel===name));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.toggle("active",x.id==="panel-"+name));
+}
+document.querySelectorAll(".nav-item").forEach(btn=>btn.addEventListener("click",()=>activateAdminPanel(btn.dataset.panel)));
 $("logoutBtn").addEventListener("click",async()=>{await signOut(auth);location.href="index.html";});
 $("scheduleForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!ownerReady)return;
