@@ -488,15 +488,16 @@ $("newsForm").addEventListener("submit",async e=>{
   try{
     let imageUrl="",videoUrl="",videoType="";
     const enteredVideoUrl=newsVideoInput.value.trim();
+    let videoOrientation="auto";
     if(selectedNewsImage&&enteredVideoUrl)throw new Error("اختر صورة أو فيديو فقط، وليس الاثنين معاً.");
-    if(enteredVideoUrl){const parsed=parseNewsVideoUrl(enteredVideoUrl);videoUrl=parsed.url;videoType=parsed.type;}
+    if(enteredVideoUrl){const parsed=parseNewsVideoUrl(enteredVideoUrl);videoUrl=parsed.url;videoType=parsed.type;videoOrientation=$("newsVideoOrientation").value||"auto";}
     if(selectedNewsImage){
       message("newsMessage","جارٍ رفع الصورة...");
       imageUrl=await uploadNewsImage(selectedNewsImage);
     }
     await addDoc(collection(db,"news"),{
       title:$("newsTitle").value.trim(),body:$("newsBody").value.trim(),
-      imageUrl,videoUrl,videoType,createdAt:serverTimestamp()
+      imageUrl,videoUrl,videoType,videoOrientation,createdAt:serverTimestamp()
     });
     e.target.reset();selectedNewsImage=null;
     $("newsImagePreviewWrap").classList.add("hidden");
