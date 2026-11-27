@@ -117,7 +117,8 @@ $("teamMatchForm").addEventListener("submit",async e=>{
       opponentName:opponent,matchDate,goalsFor,goalsAgainst,createdAt:serverTimestamp()
     });
     e.target.reset();
-    $("matchDate").value=new Date().toLocaleDateString("en-CA");
+    const today=new Date();
+    $("matchDate").value=[today.getFullYear(),String(today.getMonth()+1).padStart(2,"0"),String(today.getDate()).padStart(2,"0")].join("-");
     showMessage("matchMessage","تم تسجيل نتيجة المقابلة بنجاح.");
     await loadTeamMatches();
   }catch(err){showMessage("matchMessage","تعذر تسجيل النتيجة: "+err.message,true);}
@@ -194,8 +195,9 @@ onAuthStateChanged(auth,async user=>{
     profile=snap.data();ready=true;
     $("teamName").textContent=profile.fullName||"فريقي";
     $("teamEmail").textContent=user.email||"";
-    $("matchDate").value=new Date().toLocaleDateString("en-CA");
+    const now=new Date();
+    $("matchDate").value=[now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
     showMessage("pageMessage","تم تسجيل الدخول بنجاح.");
-    await loadChallenges();
+    await Promise.all([loadChallenges(),loadTeamMatches()]);
   }catch(e){showMessage("pageMessage","تعذر تحميل ملف الفريق: "+e.message,true);}
 });
