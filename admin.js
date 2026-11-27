@@ -382,7 +382,7 @@ const newsVideoInput = $("newsVideoUrl");
 function parseNewsVideoUrl(value){
   const raw=String(value||"").trim();if(!raw)return null;
   try{
-    const url=new URL(raw);const host=url.hostname.toLowerCase().replace(/^www\\./,"").replace(/^m\\./,"");
+    const url=new URL(raw);const host=url.hostname.toLowerCase().replace(/^www\./,"").replace(/^m\./,"");
     if(host==="youtu.be"||host==="youtube.com"||host==="youtube-nocookie.com"){
       let id="";
       if(host==="youtu.be")id=url.pathname.split("/").filter(Boolean)[0]||"";
@@ -392,12 +392,12 @@ function parseNewsVideoUrl(value){
       return {type:"youtube",url:"https://www.youtube.com/watch?v="+id,id};
     }
     if(host==="facebook.com"||host==="fb.watch"){
-      if(!/(^|\\.)facebook\\.com$/.test(url.hostname.toLowerCase())&&host!=="fb.watch")throw new Error("رابط Facebook غير صالح.");
-      if(!/(\\/videos\\/|\\/watch\\/|video\\.php|\\/reel\\/|fb\\.watch)/i.test(url.href))throw new Error("يرجى لصق رابط فيديو أو Reel من Facebook.");
+      if(!/(^|\.)facebook\.com$/.test(url.hostname.toLowerCase())&&host!=="fb.watch")throw new Error("رابط Facebook غير صالح.");
+      if(!/(\/videos\/|\/watch\/|video\.php|\/reel\/|fb\.watch)/i.test(url.href))throw new Error("يرجى لصق رابط فيديو أو Reel من Facebook.");
       return {type:"facebook",url:raw};
     }
     if(host==="tiktok.com"){
-      const match=url.pathname.match(/\\/video\\/(\\d+)/)||url.pathname.match(/\\/player\\/v1\\/(\\d+)/);
+      const match=url.pathname.match(/\/video\/(\d+)/)||url.pathname.match(/\/player\/v1\/(\d+)/);
       if(!match)throw new Error("رابط TikTok غير صالح.");
       return {type:"tiktok",url:"https://www.tiktok.com/@video/video/"+match[1],id:match[1]};
     }
