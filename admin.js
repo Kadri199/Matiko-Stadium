@@ -378,10 +378,25 @@ const CLOUDINARY_CLOUD_NAME = "vigpliv3";
 const CLOUDINARY_UPLOAD_PRESET = "Kadri1992";
 let selectedNewsImage = null;
 let newsPreviewUrl = "";
+const newsVideoInput = $("newsVideoUrl");
+function getYouTubeVideoId(value){
+  const raw=String(value||"").trim();if(!raw)return "";
+  try{
+    const url=new URL(raw);const host=url.hostname.replace(/^www\\./,"").replace(/^m\\./,"");
+    if(host==="youtu.be")return url.pathname.split("/").filter(Boolean)[0]||"";
+    if(host==="youtube.com"||host==="youtube-nocookie.com"){
+      if(url.pathname==="/watch")return url.searchParams.get("v")||"";
+      const parts=url.pathname.split("/").filter(Boolean);
+      if(["embed","shorts","live"].includes(parts[0]))return parts[1]||"";
+    }
+  }catch(_){}
+  return "";
+}
 
 $("newsImageFile").addEventListener("change",()=>{
   const file=$("newsImageFile").files?.[0]||null;
   selectedNewsImage=file;
+  if(file&&newsVideoInput.value.trim()){selectedNewsImage=null;$("newsImageFile").value="";message("newsMessage","اختر صورة أو فيديو فقط، وليس الاثنين معاً.",true);return;}
   if(newsPreviewUrl)URL.revokeObjectURL(newsPreviewUrl);
   newsPreviewUrl="";
   if(!file){$("newsImagePreviewWrap").classList.add("hidden");return;}
@@ -394,6 +409,7 @@ $("newsImageFile").addEventListener("change",()=>{
   $("newsImagePreviewWrap").classList.remove("hidden");
   message("newsMessage","تم اختيار الصورة. ستُرفع عند نشر الخبر.");
 });
+newsVideoInput.addEventListener("input",()=>{if(newsVideoInput.value.trim()&&selectedNewsImage){selectedNewsImage=null;$("newsImageFile").value="";$("newsImagePreview").removeAttribute("src");$("newsImagePreviewWrap").classList.add("hidden");if(newsPreviewUrl)URL.revokeObjectURL(newsPreviewUrl);newsPreviewUrl="";}});
 $("clearNewsImage").addEventListener("click",()=>{
   selectedNewsImage=null;$("newsImageFile").value="";
   $("newsImagePreview").removeAttribute("src");
@@ -453,14 +469,21 @@ $("newsForm").addEventListener("submit",async e=>{
   const submit=e.submitter||e.target.querySelector('button[type="submit"],button:not([type])');
   if(submit)submit.disabled=true;
   try{
-    let imageUrl="";
+    let imageUrl="",videoUrl="";
+    const enteredVideoUrl=newsVideoInput.value.trim();
+    if(selectedNewsImage&&enteredVideoUrl)throw new Error("اختر صورة أو فيديو فقط، وليس الاثنين معاً.");
+    if(enteredVideoUrl){
+      const videoId=getYouTubeVideoId(enteredVideoUrl);
+      if(!videoId||! /^[A-Za-z0-9_-]{11}$/.test(videoId))throw new Error("رابط YouTube غير صالح. انسخ رابط فيديو صحيح.");
+      videoUrl="https://www.youtube.com/watch?v="+videoId;
+    }
     if(selectedNewsImage){
       message("newsMessage","جارٍ رفع الصورة...");
       imageUrl=await uploadNewsImage(selectedNewsImage);
     }
     await addDoc(collection(db,"news"),{
       title:$("newsTitle").value.trim(),body:$("newsBody").value.trim(),
-      imageUrl,createdAt:serverTimestamp()
+      imageUrl,videoUrl,createdAt:serverTimestamp()
     });
     e.target.reset();selectedNewsImage=null;
     $("newsImagePreviewWrap").classList.add("hidden");
