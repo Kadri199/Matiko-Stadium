@@ -13,15 +13,5 @@
 @media(max-width:560px){.record-actions{width:100%;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden}.record-actions button{flex:1 1 0;min-width:max-content;padding:5px 6px;font-size:10px}}
 
 
-/* Only rejection uses the red car-indicator flash; approval has no glow. */
-.booking-indicator-red{
-  border:3px solid #dc2626!important;
-  color:#991b1b!important;
-  background:#fff0f0!important;
-  box-shadow:0 0 0 2px #dc262655,0 0 12px 4px #ef4444aa!important;
-  animation:bookingRedBlink .32s ease-in-out 5;
-}
-@keyframes bookingRedBlink{
-  0%,100%{opacity:1;box-shadow:0 0 0 2px #dc262655,0 0 14px 5px #ef4444aa}
-  50%{opacity:.42;box-shadow:0 0 0 1px #dc262622,0 0 3px 1px #ef444433}
+/* Only rejection uses the red car-indicator flash; approval has no glow. */50%{opacity:.42;box-shadow:0 0 0 1px #dc262622,0 0 3px 1px #ef444433}
 }
