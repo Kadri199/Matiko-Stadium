@@ -507,6 +507,18 @@ onSnapshot(doc(db, "settings", "about"), snapshot => {
   const data = snapshot.data();
   const description = $("aboutDescriptionHome");
   const contact = $("aboutContactHome");
+  const mapLink = $("aboutGoogleMapsHome");
+  if (mapLink) {
+    const mapUrl = String(data.googleMapsUrl || "").trim();
+    if (mapUrl && /^https?:\\/\\//i.test(mapUrl)) {
+      mapLink.href = mapUrl;
+      mapLink.classList.remove("hidden");
+    } else {
+      mapLink.removeAttribute("href");
+      mapLink.classList.add("hidden");
+    }
+  }
+
   if (description && data.description) description.textContent = data.description;
   if (contact) {
     contact.replaceChildren();
