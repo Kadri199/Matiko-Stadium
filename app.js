@@ -178,8 +178,13 @@ function renderHomepageNews(snapshot) {
     const card = document.createElement("article");
     card.className = "news-card";
     if (item.videoUrl) {
-      const videoId = (() => { try { const url=new URL(item.videoUrl); if(url.hostname.includes("youtu.be"))return url.pathname.split("/").filter(Boolean)[0]||""; return url.searchParams.get("v") || url.pathname.split("/").filter(Boolean).slice(-1)[0] || ""; } catch (_) { return ""; } })();
-      if(videoId){const frame=document.createElement("iframe");frame.className="news-video";frame.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId);frame.title=item.title||"فيديو من الملعب";frame.loading="lazy";frame.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";frame.referrerPolicy="strict-origin-when-cross-origin";frame.allowFullscreen=true;card.appendChild(frame);}
+      let videoType=item.videoType||"";
+      if(!videoType){try{const u=new URL(item.videoUrl);videoType=u.hostname.includes("youtu")||u.hostname==="youtu.be"?"youtube":u.hostname.includes("facebook")||u.hostname==="fb.watch"?"facebook":u.hostname.includes("tiktok")?"tiktok":"";}catch(_){}}
+      let embedUrl="";
+      if(videoType==="youtube"){try{const u=new URL(item.videoUrl);const id=u.hostname==="youtu.be"?u.pathname.split("/").filter(Boolean)[0]:u.searchParams.get("v");if(id)embedUrl="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(id);}catch(_){}}
+      else if(videoType==="facebook")embedUrl="https://www.facebook.com/plugins/video.php?href="+encodeURIComponent(item.videoUrl)+"&show_text=false&width=560";
+      else if(videoType==="tiktok"){const match=item.videoUrl.match(/\/video\/(\d+)/);if(match)embedUrl="https://www.tiktok.com/player/v1/"+match[1];}
+      if(embedUrl){const frame=document.createElement("iframe");frame.className="news-video";frame.src=embedUrl;frame.title=item.title||"فيديو من الملعب";frame.loading="lazy";frame.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";frame.referrerPolicy="strict-origin-when-cross-origin";frame.allowFullscreen=true;card.appendChild(frame);}
     } else if (item.imageUrl) {
       const img = document.createElement("img");
       img.className = "news-image";
