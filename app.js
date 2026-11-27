@@ -183,7 +183,7 @@ function renderHomepageNews(snapshot) {
       const orientation=item.videoOrientation||"auto";
       let facebookPortrait=false;
       if(videoType==="facebook"&&orientation==="auto"){try{facebookPortrait=/\\/reel\\//i.test(new URL(item.videoUrl).pathname);}catch(_){}}
-      const portrait=orientation==="portrait"||(orientation==="auto"&&(videoType==="tiktok"||videoType==="instagram"||facebookPortrait));
+      const portrait=videoType==="facebook"||orientation==="portrait"||(orientation==="auto"&&(videoType==="tiktok"||videoType==="instagram"||facebookPortrait));
       let embedUrl="";
       if(videoType==="youtube"){try{const u=new URL(item.videoUrl);const id=u.hostname==="youtu.be"?u.pathname.split("/").filter(Boolean)[0]:u.searchParams.get("v");if(id)embedUrl="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(id);}catch(_){}}
       else if(videoType==="facebook"){const fbWidth=portrait?390:560;const fbHeight=portrait?693:315;embedUrl="https://www.facebook.com/plugins/video.php?href="+encodeURIComponent(item.videoUrl)+"&show_text=false&width="+fbWidth+"&height="+fbHeight;}
