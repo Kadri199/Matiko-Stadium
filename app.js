@@ -465,11 +465,17 @@ function renderHomepageResults(snapshot) {
             count.className = "broadcast-goal-count";
             count.textContent = "⚽ × " + goals;
             row.append(name, count);
-            if (goals >= 3) {
-              const hattrick = document.createElement("span");
-              hattrick.className = "broadcast-hattrick";
-              hattrick.textContent = "هاتريك";
-              row.appendChild(hattrick);
+            const goalMilestones = {
+              3: "هاتريك",
+              4: "سوبر هاتريك",
+              5: "كوادرو هاتريك",
+              6: "دوبل هاتريك"
+            };
+            if (goalMilestones[goals]) {
+              const achievement = document.createElement("span");
+              achievement.className = "broadcast-hattrick";
+              achievement.textContent = goalMilestones[goals];
+              row.appendChild(achievement);
             }
           } else {
             row.append(name);
