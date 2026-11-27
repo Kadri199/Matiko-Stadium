@@ -3,15 +3,72 @@ import { addDoc, collection, limit, onSnapshot, orderBy, query, serverTimestamp 
 const $=id=>document.getElementById(id);
 const raw=[["easy","Lionel Messi","messi"],["easy","Cristiano Ronaldo","ronaldo"],["easy","Neymar Jr.","neymar"],["easy","Kylian Mbappé","mbappe"],["easy","Erling Haaland","haaland"],["easy","Mohamed Salah","salah"],["easy","Luka Modrić","modric"],["easy","Kevin De Bruyne","de-bruyne"],["easy","Vinícius Júnior","vinicius"],["easy","Jude Bellingham","bellingham"],["easy","Harry Kane","kane"],["easy","Son Heung-min","son"],["easy","Robert Lewandowski","lewandowski"],["easy","Zlatan Ibrahimović","ibrahimovic"],["easy","Zinedine Zidane","zidane"],["easy","Ronaldinho","ronaldinho"],["easy","David Beckham","beckham"],["easy","Karim Benzema","benzema"],["easy","Lamine Yamal","lamine-yamal"],["medium","Andrés Iniesta","andres-iniesta"],["medium","Xavi","xavi"],["medium","Pelé","pele"],["medium","Diego Maradona","diego-maradona"],["medium","Johan Cruyff","johan-cruyff"],["medium","Ronaldo Nazário","ronaldo-nazario"],["medium","Gianluigi Buffon","gianluigi-buffon"],["medium","Iker Casillas","iker-casillas"],["medium","Manuel Neuer","manuel-neuer"],["medium","Sergio Ramos","sergio-ramos"],["medium","Virgil van Dijk","virgil-van-dijk"],["medium","Luis Suárez","luis-suarez"],["medium","Gareth Bale","gareth-bale"],["medium","Wayne Rooney","wayne-rooney"],["medium","Thierry Henry","thierry-henry"],["medium","Francesco Totti","francesco-totti"],["medium","Mesut Özil","mesut-ozil"],["medium","Frank Lampard","frank-lampard"],["medium","Antoine Griezmann","antoine-griezmann"],["medium","Kaká","kaka"],["medium","Robin van Persie","robin-van-persie"],["medium","Steven Gerrard","steven-gerrard"],["medium","Eusébio","eusebio"],["medium","Thomas Müller","thomas-muller"],["medium","Eden Hazard","eden-hazard"],["medium","Arjen Robben","arjen-robben"],["medium","Didier Drogba","didier-drogba"],["medium","Samuel Eto'o","samuel-etoo"],["medium","Fernando Torres","fernando-torres"],["medium","Sergio Agüero","sergio-aguero"],["medium","James Rodríguez","james-rodriguez"],["medium","Olivier Giroud","olivier-giroud"],["medium","Franck Ribéry","franck-ribery"],["medium","Andriy Shevchenko","andriy-shevchenko"],["medium","Ryan Giggs","ryan-giggs"],["medium","Andrea Pirlo","andrea-pirlo"],["medium","Toni Kroos","toni-kroos"],["medium","David Villa","david-villa"],["medium","Ángel Di María","angel-di-maria"],["medium","Paolo Maldini","paolo-maldini"],["medium","Luis Figo","luis-figo"],["medium","Marcelo Vieira","marcelo-vieira"],["medium","Riyad Mahrez","riyad-mahrez"],["medium","Achraf Hakimi","achraf-hakimi"],["hard","Sunil Chhetri","sunil-chhetri"],["hard","Marta","marta"],["hard","Alex Morgan","alex-morgan"],["hard","Megan Rapinoe","megan-rapinoe"],["hard","Sam Kerr","sam-kerr"],["hard","Alexia Putellas","alexia-putellas"],["hard","Aitana Bonmatí","aitana-bonmati"],["hard","Ada Hegerberg","ada-hegerberg"],["hard","Lucy Bronze","lucy-bronze"],["hard","Leah Williamson","leah-williamson"],["hard","Mary Earps","mary-earps"],["hard","Vivianne Miedema","vivianne-miedema"],["hard","Christine Sinclair","christine-sinclair"],["hard","Roberto Baggio","roberto-baggio"],["hard","Gerd Müller","gerd-muller"],["hard","Alfredo Di Stéfano","alfredo-di-stefano"],["hard","Marco van Basten","marco-van-basten"],["hard","George Best","george-best"],["hard","Diego Forlán","diego-forlan"],["hard","Alessandro Del Piero","alessandro-del-piero"],["hard","Philipp Lahm","philipp-lahm"],["hard","Edinson Cavani","edinson-cavani"],["hard","Fabio Cannavaro","fabio-cannavaro"],["hard","Oliver Kahn","oliver-kahn"],["hard","Bobby Charlton","bobby-charlton"],["hard","Raúl","raul"],["hard","Michael Ballack","michael-ballack"],["hard","Sergio Busquets","sergio-busquets"],["hard","Paolo Rossi","paolo-rossi"],["hard","Romário","romario"],["hard","Javier Zanetti","javier-zanetti"],["hard","Hristo Stoichkov","hristo-stoichkov"],["hard","Yaya Touré","yaya-toure"],["hard","N'Golo Kanté","ngolo-kante"],["hard","Edin Džeko","edin-dzeko"],["hard","Park Ji-Sung","park-ji-sung"],["hard","Hidetoshi Nakata","hidetoshi-nakata"],["hard","Carlos Tevez","carlos-tevez"],["hard","Gabriel Batistuta","gabriel-batistuta"],["hard","Javier Mascherano","javier-mascherano"],["hard","Arturo Vidal","arturo-vidal"],["hard","Nani","nani"],["hard","Rio Ferdinand","rio-ferdinand"],["hard","Patrick Vieira","patrick-vieira"],["hard","Xherdan Shaqiri","xherdan-shaqiri"],["hard","Zico","zico"],["hard","Ruud van Nistelrooy","ruud-van-nistelrooy"],["hard","Lilian Thuram","lilian-thuram"],["hard","Dunga","dunga"],["hard","Ronald Koeman","ronald-koeman"],["hard","Shinji Kagawa","shinji-kagawa"]];
 const players=raw.map(([level,name,slug])=>({level,name,src:"https://geofootballguessr.com/footballers/"+slug+".webp"}));
-let score=0,number=0,locked=false,current=null,deck=[],seen=new Set(),lastCorrectIndex=-1;
+const animals=["Lion","Tiger","Leopard","Cheetah","Jaguar","Snow leopard","Lion-tailed macaque","African elephant","Asian elephant","Giraffe","Zebra","Hippopotamus","Rhinoceros","Gorilla","Chimpanzee","Orangutan","Red panda","Giant panda","Koala","Kangaroo","Wallaby","Wombat","Sloth","Armadillo"," anteater","Meerkat","Hyena","Gray wolf","Red fox","Arctic fox","Brown bear","Polar bear","Panda","Moose","Reindeer","Bison","Buffalo","Camel","Dromedary","Llama","Alpaca","Horse","Donkey","Okapi","Tapir","Wild boar","Deer","Gazelle","Antelope","Mountain goat","Sheep","Goat","Cow","Dog","Cat","Rabbit","Hare","Squirrel","Beaver","Otter","Badger","Hedgehog","Bat","Eagle","Bald eagle","Owl","Snowy owl","Falcon","Peregrine falcon","Parrot","Macaw","Toucan","Peacock","Flamingo","Penguin","Ostrich","Emu","Swan","Pelican","Kingfisher","Woodpecker","Hummingbird","Albatross","Crocodile","Alligator","Komodo dragon","Iguana","Chameleon","Gecko","Python","King cobra","Turtle","Sea turtle","Frog","Tree frog","Salamander","Shark","Great white shark","Dolphin","Blue whale","Orca","Octopus","Sea horse","Jellyfish","Butterfly","Monarch butterfly","Honey bee","Ladybird","Praying mantis","Dragonfly","Scorpion","Tarantula","Ant","Grasshopper","Flamingo","Peacock"];
+const managers=["Pep Guardiola","Mikel Arteta","Carlo Ancelotti","José Mourinho","Jürgen Klopp","Sir Alex Ferguson","Arsène Wenger","Diego Simeone","Luis Enrique","Xabi Alonso","Unai Emery","Thomas Tuchel","Antonio Conte","Massimiliano Allegri","Roberto Mancini","Didier Deschamps","Gareth Southgate","Julian Nagelsmann","Hansi Flick","Vincent Kompany","Ruben Amorim","Erik ten Hag","Eddie Howe","Ange Postecoglou","Mauricio Pochettino","Brendan Rodgers","Rafael Benítez","Fabio Capello","Marcello Lippi","Arrigo Sacchi","José Villalonga","Ottmar Hitzfeld","Jupp Heynckes","Louis van Gaal","Guus Hiddink","Sven-Göran Eriksson","Bobby Robson","Carlo Mazzone","Claudio Ranieri","Roberto De Zerbi","Graham Potter","Frank Rijkaard","Ronald Koeman","Frank de Boer","Laurent Blanc","Zlatko Dalić","Herbert Chapman","Brian Clough","Mircea Lucescu","Vahid Halilhodžić"];
+const animalEntries=animals.map((name,i)=>({category:"animal",level:i<30?"easy":i<65?"medium":"hard",name,wiki:name}));
+const managerEntries=managers.map((name,i)=>({category:"manager",level:i<15?"easy":i<35?"medium":"hard",name,wiki:name}));
+const playerEntries=players.map(p=>({...p,category:"player",wiki:p.name}));
+const stages=[playerEntries,animalEntries,managerEntries];
+const stageNames=["اللاعبين","الحيوانات","المدربين"];
+let stageIndex=0,stageSeen=new Set(),photoCache=new Map();
+async function photoFor(entry){
+ if(entry.src)return entry.src;
+ if(photoCache.has(entry.name))return photoCache.get(entry.name);
+ const task=(async()=>{
+  const title=entry.wiki.replace(/ /g,"_");
+  try{
+   const response=await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(title),{headers:{"Accept":"application/json"}});
+   if(response.ok){const data=await response.json();const url=data.thumbnail?.source||data.originalimage?.source;if(url)return url;}
+  }catch(e){}
+  try{
+   const q=encodeURIComponent(entry.name+" "+(entry.category==="animal"?"animal":"football manager"));
+   const response=await fetch("https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch="+q+"&gsrnamespace=0&gsrlimit=1&prop=pageimages&piprop=thumbnail&pithumbsize=640&format=json&origin=*");
+   if(response.ok){const data=await response.json();const page=Object.values(data.query?.pages||{})[0];if(page?.thumbnail?.source)return page.thumbnail.source;}
+  }catch(e){}
+  return "https://placehold.co/640x640/102a36/ffffff?text="+encodeURIComponent(entry.name);
+ })();
+ photoCache.set(entry.name,task);return task;
+}
+
+let score=0,number=0,locked=false,current=null,deck=[],lastCorrectIndex=-1;
 const shuffle=a=>{const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x};
 function level(){return score<10?"easy":score<30?"medium":"hard"}
-function nextPlayer(){let unlocked=players.filter(p=>!seen.has(p.name)&&(p.level==="easy"||(level()!=="easy"&&p.level==="medium")||level()==="hard"));if(!unlocked.length)unlocked=players.filter(p=>!seen.has(p.name));if(!unlocked.length)return null;const available=new Set(unlocked.map(p=>p.name));deck=deck.filter(p=>available.has(p.name));if(!deck.length)deck=shuffle(unlocked);const next=deck.pop();seen.add(next.name);return next;}
-function optionsFor(p){const pool=players.filter(x=>x!==p&&(x.level===p.level||p.level==="hard"||x.level==="easy"));let choices=shuffle([p,...shuffle(pool).slice(0,3)]);let correct=choices.findIndex(x=>x===p);if(choices.length>1&&correct===lastCorrectIndex){const swap=(correct+1+Math.floor(Math.random()*(choices.length-1)))%choices.length;[choices[correct],choices[swap]]=[choices[swap],choices[correct]];correct=swap;}lastCorrectIndex=correct;return choices}
+function nextEntry(){
+ let pool=stages[stageIndex].filter(p=>!stageSeen.has(p.name));
+ if(!pool.length){
+  stageIndex++;
+  if(stageIndex>=stages.length){stageIndex=0;stageSeen.clear();}
+  deck=[];
+  pool=stages[stageIndex].filter(p=>!stageSeen.has(p.name));
+ }
+ const available=new Set(pool.map(p=>p.name));
+ deck=deck.filter(p=>available.has(p.name));
+ if(!deck.length)deck=shuffle(pool);
+ const next=deck.pop();stageSeen.add(next.name);return next;
+}
+function optionsFor(p){
+ const pool=stages[stageIndex].filter(x=>x!==p);
+ const choices=shuffle([p,...shuffle(pool).slice(0,3)]);
+ let correct=choices.findIndex(x=>x===p);
+ if(choices.length>1&&correct===lastCorrectIndex){const swap=(correct+1+Math.floor(Math.random()*(choices.length-1)))%choices.length;[choices[correct],choices[swap]]=[choices[swap],choices[correct]];correct=swap;}
+ lastCorrectIndex=correct;return choices;
+}
 onSnapshot(query(collection(db,"gameScores","players","entries"),orderBy("score","desc"),limit(10)),snap=>{const list=$("top10");list.replaceChildren();snap.docs.forEach((doc,i)=>{const d=doc.data(),li=document.createElement("li"),rank=document.createElement("span"),name=document.createElement("span"),points=document.createElement("b");rank.textContent=["🥇","🥈","🥉"][i]||String(i+1);name.textContent=d.name||"لاعب";points.textContent=(d.score||0)+" نقطة";li.append(rank,name,points);list.append(li)})},console.warn);
-function render(){locked=false;current=nextPlayer();if(!current){$("questionNo").textContent=number;$("quizFeedback").textContent="أكملت جميع اللاعبين دون تكرار! أحسنت، لقد وصلت إلى نهاية التحدي."; $("quizFeedback").className="players-feedback good";$("playerOptions").replaceChildren();$("quizFinish").classList.remove("hidden");$("finalScore").textContent="نتيجتك النهائية: "+score+" نقطة — "+number+" لاعباً مختلفاً.";return;}number++;$("quizFinish").classList.add("hidden");$("questionNo").textContent=number;$("currentScore").textContent=score;$("correctCount").textContent=score;$("progressBar").style.width=((score%20)/20*100)+"%";$("playerPhoto").src=current.src;$("playerPhoto").alt="صورة "+current.name;$("quizFeedback").textContent="من هو هذا اللاعب؟ مستوى: "+(current.level==="easy"?"سهل":current.level==="medium"?"متوسط":"صعب");$("quizFeedback").className="players-feedback";const box=$("playerOptions");box.replaceChildren();optionsFor(current).forEach(opt=>{const b=document.createElement("button");b.className="player-option";b.type="button";b.textContent=opt.name;b.addEventListener("click",()=>answer(b,opt===current));box.append(b)})}
+async function render(){
+ locked=false;current=nextEntry();number++;
+ $("quizFinish").classList.add("hidden");
+ $("questionNo").textContent=number;$("currentScore").textContent=score;$("correctCount").textContent=score;
+ $("progressBar").style.width=((score%20)/20*100)+"%";
+ $("playerPhoto").src="https://placehold.co/640x640/102a36/ffffff?text="+encodeURIComponent("Loading...");
+ $("playerPhoto").alt="صورة "+current.name;
+ $("quizFeedback").textContent=(current.category==="player"?"من هو هذا اللاعب؟":current.category==="animal"?"ما اسم هذا الحيوان؟":"من هو هذا المدرب؟")+" — "+stageNames[stageIndex]+" | مستوى: "+(current.level==="easy"?"سهل":current.level==="medium"?"متوسط":"صعب");
+ $("quizFeedback").className="players-feedback";
+ const box=$("playerOptions");box.replaceChildren();
+ optionsFor(current).forEach(opt=>{const b=document.createElement("button");b.className="player-option";b.type="button";b.textContent=opt.name;b.addEventListener("click",()=>answer(b,opt===current));box.append(b)});
+ const src=await photoFor(current);if(current===current)$("playerPhoto").src=src;
+}
 function answer(button,correct){if(locked)return;locked=true;const buttons=[...$("playerOptions").querySelectorAll("button")];buttons.forEach(b=>{b.disabled=true;if(b.textContent===current.name)b.classList.add("correct")});if(correct){score++;$("quizFeedback").textContent="إجابة صحيحة! +1 ⚽";$("quizFeedback").classList.add("good")}else{button.classList.add("wrong");$("quizFeedback").textContent="الإجابة الصحيحة: "+current.name+" — لا تتوقف، حاول مجدداً!";$("quizFeedback").classList.add("bad")} $("currentScore").textContent=score;$("correctCount").textContent=score;setTimeout(render,850)}
 $("saveScore").addEventListener("click",async()=>{const name=$("playerName").value.trim().replace(/\s+/g," ");if(name.length<2||name.length>24){$("saveStatus").textContent="اكتب اسماً صحيحاً من حرفين إلى 24 حرفاً.";return}const btn=$("saveScore");btn.disabled=true;try{await addDoc(collection(db,"gameScores","players","entries"),{name,score,createdAt:serverTimestamp()});$("saveStatus").textContent="تم حفظ نتيجتك الحالية! واصل اللعب وحسّن رقمك.";btn.disabled=false}catch(e){$("saveStatus").textContent="تعذر الحفظ. تحقق من الاتصال وحاول مجدداً.";btn.disabled=false}});
-$("playAgain").addEventListener("click",()=>{score=0;number=0;deck=[];seen.clear();lastCorrectIndex=-1;$("saveStatus").textContent="";render();window.scrollTo({top:0,behavior:"smooth"})});
+$("playAgain").addEventListener("click",()=>{score=0;number=0;deck=[];stageIndex=0;stageSeen.clear();lastCorrectIndex=-1;$("saveStatus").textContent="";render();window.scrollTo({top:0,behavior:"smooth"})});
 $("finalScore").textContent="احفظ نتيجتك في أي وقت، والعب بلا نهاية!";
-$("quizFinish").classList.remove("hidden");$("playAgain").textContent="إعادة الرقم إلى الصفر";render();
+$("quizFinish").classList.add("hidden");$("playAgain").textContent="إعادة الرقم إلى الصفر";render();
