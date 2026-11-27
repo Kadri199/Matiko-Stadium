@@ -191,3 +191,13 @@
   filter:drop-shadow(0 0 3px #f6d875aa) drop-shadow(0 0 8px #eabf4d66)!important;
   box-shadow:0 0 5px #f6d87566,0 0 11px #eabf4d44!important;
 }
+
+
+/* The winning team's crest keeps winking with a soft golden pulse until its result is deleted. */
+@keyframes winnerCrestWink{
+  0%,100%{filter:drop-shadow(0 0 2px #f6d87566) drop-shadow(0 0 5px #eabf4d33);box-shadow:0 0 3px #f6d87544;border-color:#d9c77c}
+  50%{filter:drop-shadow(0 0 7px #ffe27a) drop-shadow(0 0 16px #eabf4dcc);box-shadow:0 0 9px #f6d875cc,0 0 19px #eabf4d88;border-color:#ffe27a}
+}
+.broadcast-winner-crest{
+  animation:winnerCrestWink 1.25s ease-in-out infinite!important;
+}
