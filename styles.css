@@ -226,3 +226,6 @@
 \n/* Android app download button */\n.app-download-link{display:inline-flex;align-items:center;gap:10px;padding:9px 15px;border-radius:15px;background:linear-gradient(135deg,#c8f169,#a7df45);color:#123b2c;box-shadow:0 5px 16px #0002;font-weight:800;line-height:1.35}.app-download-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:#fff;font-size:23px}.app-download-link small{display:block;font-size:10px;font-weight:700;opacity:.8}.app-download-arrow{font-size:23px;margin-inline-start:5px}@media(max-width:650px){.footer-inner{flex-wrap:wrap;justify-content:center;text-align:center;gap:14px}.app-download-link{order:3}}\n
 /* Booking modal: hidden role-specific fields must stay hidden despite modal label/input display rules. */
 .modal .hidden{display:none!important}
+
+/* Force role-specific booking fields and conditional custom inputs to obey hidden state. */
+.modal form label[hidden],.modal form input[hidden],.modal form .hidden{display:none!important;}
