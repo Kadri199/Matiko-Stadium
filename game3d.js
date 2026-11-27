@@ -27,41 +27,44 @@ mesh(new THREE.CapsuleGeometry(.34,.62,5,10),jersey,0,1.38,0,g);mesh(new THREE.S
 for(const s of [-1,1]){bar(new THREE.Vector3(s*.3,1.62,0),new THREE.Vector3(s*.48,1.12,.04),.105,jersey,g);mesh(new THREE.SphereGeometry(.1,10,8),skin,s*.48,1.1,.04,g);bar(new THREE.Vector3(s*.17,1.05,0),new THREE.Vector3(s*.2,.53,.02),.13,navy,g);bar(new THREE.Vector3(s*.2,.53,.02),new THREE.Vector3(s*.2,.12,-.04),.09,black,g);mesh(new THREE.BoxGeometry(.32,.14,.48),black,s*.2,.08,-.13,g)}
 return g}
 const keeper=person(0,gz+.4,true);keeper.scale.setScalar(1.12);
-// Premium football surface: locally generated panel artwork, so no external image or network dependency.
-function makeFootballTexture(){
-  const canvas=document.createElement("canvas");canvas.width=1024;canvas.height=512;
-  const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;
-  const base=ctx.createLinearGradient(0,0,w,h);base.addColorStop(0,"#ffffff");base.addColorStop(.5,"#e9edf0");base.addColorStop(1,"#ffffff");
-  ctx.fillStyle=base;ctx.fillRect(0,0,w,h);
-  const R=39,dx=R*1.5,dy=Math.sqrt(3)*R;
-  function polygon(x,y,r,n,rotation,fill,stroke="#182536",line=4){
-    ctx.beginPath();for(let k=0;k<n;k++){const a=rotation+k*Math.PI*2/n,px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;k?ctx.lineTo(px,py):ctx.moveTo(px,py)}
-    ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.lineWidth=line;ctx.strokeStyle=stroke;ctx.stroke();
-  }
-  // Honeycomb panel seams across the full wrap.
-  for(let row=-1;row<Math.ceil(h/dy)+2;row++)for(let col=-1;col<Math.ceil(w/dx)+2;col++){
-    const x=col*dx+(row%2)*dx/2,y=row*dy;
-    polygon(x,y,R,6,Math.PI/6,"rgba(255,255,255,0.22)","#27364a",3);
-    if((col+row*2)%7===0){
-      const dark=ctx.createLinearGradient(x-R,y-R,x+R,y+R);dark.addColorStop(0,"#263449");dark.addColorStop(1,"#080f1c");
-      polygon(x,y,R*.69,5,-Math.PI/2,dark,"#f4f6f5",5);
-      ctx.beginPath();ctx.arc(x,y,R*.43,0,Math.PI*2);ctx.strokeStyle="#4b6078";ctx.lineWidth=2;ctx.stroke();
-    }else if((col*3+row)%11===0){
-      ctx.save();ctx.translate(x,y);ctx.rotate((col-row)*.12);
-      ctx.beginPath();ctx.moveTo(-R*.48,-R*.55);ctx.lineTo(R*.52,-R*.35);ctx.lineTo(R*.18,R*.62);ctx.closePath();
-      const accent=ctx.createLinearGradient(-R,0,R,0);accent.addColorStop(0,"#0879c9");accent.addColorStop(1,"#24b4e8");ctx.fillStyle=accent;ctx.fill();
-      ctx.lineWidth=3;ctx.strokeStyle="#f4f6f5";ctx.stroke();
-      ctx.beginPath();ctx.moveTo(-R*.36,R*.46);ctx.lineTo(R*.43,R*.3);ctx.strokeStyle="#e5a52e";ctx.lineWidth=5;ctx.stroke();
-      ctx.restore();
-    }
-  }
-  // Fine surface details give the ball a manufactured, premium finish.
-  ctx.globalAlpha=.18;for(let y=0;y<h;y+=8){ctx.fillStyle=y%16?"#ffffff":"#64748b";ctx.fillRect(0,y,w,1)}ctx.globalAlpha=1;
-  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=renderer.capabilities.getMaxAnisotropy();return texture;
+// Classic black-and-white football: white leather sphere with 12 raised black pentagonal panels.
+const ballMaterial=new THREE.MeshStandardMaterial({color:0xfafafa,roughness:.72,metalness:0});
+const ball=mesh(new THREE.SphereGeometry(.22,48,36),ballMaterial,0,.23,5.15);
+const blackPanelMaterial=new THREE.MeshStandardMaterial({color:0x090909,roughness:.78,metalness:0,side:THREE.DoubleSide});
+const panelSeamMaterial=new THREE.MeshBasicMaterial({color:0xd8d8d8});
+const phi=(1+Math.sqrt(5))/2;
+const pentagonCenters=[];
+for(const a of [-1,1])for(const b of [-phi,phi]){
+  pentagonCenters.push(new THREE.Vector3(0,a,b).normalize());
+  pentagonCenters.push(new THREE.Vector3(a,b,0).normalize());
+  pentagonCenters.push(new THREE.Vector3(b,0,a).normalize());
 }
-const ballTexture=makeFootballTexture();
-const ballMaterial=new THREE.MeshStandardMaterial({map:ballTexture,roughness:.43,metalness:.025});
-const ball=mesh(new THREE.SphereGeometry(.22,40,28),ballMaterial,0,.23,5.15);
+for(const center of pentagonCenters){
+  const reference=Math.abs(center.y)<.9?new THREE.Vector3(0,1,0):new THREE.Vector3(1,0,0);
+  const tangentU=new THREE.Vector3().crossVectors(reference,center).normalize();
+  const tangentV=new THREE.Vector3().crossVectors(center,tangentU).normalize();
+  const angularRadius=.365,patchRadius=.2222,points=[];
+  const centerPoint=center.clone().multiplyScalar(patchRadius);
+  for(let k=0;k<5;k++){
+    const angle=-Math.PI/2+k*Math.PI*2/5;
+    const direction=center.clone().multiplyScalar(Math.cos(angularRadius))
+      .addScaledVector(tangentU,Math.sin(angularRadius)*Math.cos(angle))
+      .addScaledVector(tangentV,Math.sin(angularRadius)*Math.sin(angle)).normalize();
+    points.push(direction.multiplyScalar(patchRadius));
+  }
+  const vertices=[];
+  for(let k=0;k<5;k++){
+    const next=(k+1)%5;
+    vertices.push(...centerPoint.toArray(),...points[k].toArray(),...points[next].toArray());
+  }
+  const geometry=new THREE.BufferGeometry();
+  geometry.setAttribute("position",new THREE.Float32BufferAttribute(vertices,3));
+  geometry.computeVertexNormals();
+  mesh(geometry,blackPanelMaterial,0,0,0,ball);
+  const seamPoints=points.concat([points[0]]).map(v=>v.clone().multiplyScalar(1.003));
+  const seamCurve=new THREE.CatmullRomCurve3(seamPoints);
+  mesh(new THREE.TubeGeometry(seamCurve,30,.0018,5,false),panelSeamMaterial,0,0,0,ball);
+}
 const groundShadow=mesh(new THREE.CircleGeometry(.35,24),new THREE.MeshBasicMaterial({color:0x07160b,transparent:true,opacity:.3}),0,-.045,5.15);groundShadow.rotation.x=-Math.PI/2;
 const aimMat=new THREE.MeshBasicMaterial({color:0x39ff62,transparent:true,opacity:.98,depthTest:false});
 const aimGlowMat=new THREE.MeshBasicMaterial({color:0x39ff62,transparent:true,opacity:.28,depthTest:false});
