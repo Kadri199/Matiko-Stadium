@@ -379,18 +379,30 @@ const CLOUDINARY_UPLOAD_PRESET = "Kadri1992";
 let selectedNewsImage = null;
 let newsPreviewUrl = "";
 const newsVideoInput = $("newsVideoUrl");
-function getYouTubeVideoId(value){
-  const raw=String(value||"").trim();if(!raw)return "";
+function parseNewsVideoUrl(value){
+  const raw=String(value||"").trim();if(!raw)return null;
   try{
-    const url=new URL(raw);const host=url.hostname.replace(/^www\./,"").replace(/^m\./,"");
-    if(host==="youtu.be")return url.pathname.split("/").filter(Boolean)[0]||"";
-    if(host==="youtube.com"||host==="youtube-nocookie.com"){
-      if(url.pathname==="/watch")return url.searchParams.get("v")||"";
-      const parts=url.pathname.split("/").filter(Boolean);
-      if(["embed","shorts","live"].includes(parts[0]))return parts[1]||"";
+    const url=new URL(raw);const host=url.hostname.toLowerCase().replace(/^www\\./,"").replace(/^m\\./,"");
+    if(host==="youtu.be"||host==="youtube.com"||host==="youtube-nocookie.com"){
+      let id="";
+      if(host==="youtu.be")id=url.pathname.split("/").filter(Boolean)[0]||"";
+      else if(url.pathname==="/watch")id=url.searchParams.get("v")||"";
+      else {const parts=url.pathname.split("/").filter(Boolean);if(["embed","shorts","live"].includes(parts[0]))id=parts[1]||"";}
+      if(!/^[A-Za-z0-9_-]{11}$/.test(id))throw new Error("رابط YouTube غير صالح.");
+      return {type:"youtube",url:"https://www.youtube.com/watch?v="+id,id};
     }
-  }catch(_){}
-  return "";
+    if(host==="facebook.com"||host==="fb.watch"){
+      if(!/(^|\\.)facebook\\.com$/.test(url.hostname.toLowerCase())&&host!=="fb.watch")throw new Error("رابط Facebook غير صالح.");
+      if(!/(\\/videos\\/|\\/watch\\/|video\\.php|\\/reel\\/|fb\\.watch)/i.test(url.href))throw new Error("يرجى لصق رابط فيديو أو Reel من Facebook.");
+      return {type:"facebook",url:raw};
+    }
+    if(host==="tiktok.com"){
+      const match=url.pathname.match(/\\/video\\/(\\d+)/)||url.pathname.match(/\\/player\\/v1\\/(\\d+)/);
+      if(!match)throw new Error("رابط TikTok غير صالح.");
+      return {type:"tiktok",url:"https://www.tiktok.com/@video/video/"+match[1],id:match[1]};
+    }
+  }catch(err){if(err instanceof TypeError)throw new Error("رابط الفيديو غير صالح.");throw err;}
+  throw new Error("يدعم الموقع روابط YouTube وFacebook وTikTok فقط.");
 }
 
 $("newsImageFile").addEventListener("change",()=>{
@@ -469,21 +481,17 @@ $("newsForm").addEventListener("submit",async e=>{
   const submit=e.submitter||e.target.querySelector('button[type="submit"],button:not([type])');
   if(submit)submit.disabled=true;
   try{
-    let imageUrl="",videoUrl="";
+    let imageUrl="",videoUrl="",videoType="";
     const enteredVideoUrl=newsVideoInput.value.trim();
     if(selectedNewsImage&&enteredVideoUrl)throw new Error("اختر صورة أو فيديو فقط، وليس الاثنين معاً.");
-    if(enteredVideoUrl){
-      const videoId=getYouTubeVideoId(enteredVideoUrl);
-      if(!videoId||! /^[A-Za-z0-9_-]{11}$/.test(videoId))throw new Error("رابط YouTube غير صالح. انسخ رابط فيديو صحيح.");
-      videoUrl="https://www.youtube.com/watch?v="+videoId;
-    }
+    if(enteredVideoUrl){const parsed=parseNewsVideoUrl(enteredVideoUrl);videoUrl=parsed.url;videoType=parsed.type;}
     if(selectedNewsImage){
       message("newsMessage","جارٍ رفع الصورة...");
       imageUrl=await uploadNewsImage(selectedNewsImage);
     }
     await addDoc(collection(db,"news"),{
       title:$("newsTitle").value.trim(),body:$("newsBody").value.trim(),
-      imageUrl,videoUrl,createdAt:serverTimestamp()
+      imageUrl,videoUrl,videoType,createdAt:serverTimestamp()
     });
     e.target.reset();selectedNewsImage=null;
     $("newsImagePreviewWrap").classList.add("hidden");
