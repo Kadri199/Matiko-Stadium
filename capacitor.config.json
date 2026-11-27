@@ -1,0 +1,17 @@
+{
+  "appId": "dz.matiko.stadium",
+  "appName": "Matiko Stadium",
+  "webDir": "www",
+  "server": {
+    "url": "https://kadri199.github.io/Matiko-Stadium/",
+    "cleartext": false,
+    "allowNavigation": [
+      "kadri199.github.io",
+      "matiko-stadium.firebaseapp.com",
+      "accounts.google.com"
+    ]
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
