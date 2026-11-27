@@ -727,6 +727,7 @@ $("teamLogout").addEventListener("click", async () => {
 
 onAuthStateChanged(auth, async user => {
   currentUser = user;
+  $("teamOne").value = "";
   document.body.classList.toggle("owner-signed-in", isOwnerAccount(user));
   if (latestResultsSnapshot) renderHomepageResults(latestResultsSnapshot);
   const teamHeader = $("teamHeaderAccount");
@@ -744,7 +745,9 @@ onAuthStateChanged(auth, async user => {
     try {
       const profile = await getDoc(doc(db, "users", user.uid));
       if (auth.currentUser?.uid === user.uid && profile.exists() && profile.data().role === "team") {
-        $("headerTeamName").textContent = profile.data().fullName || "فريقي";
+        const accountTeamName = String(profile.data().fullName || "").trim();
+        $("headerTeamName").textContent = accountTeamName || "فريقي";
+        $("teamOne").value = accountTeamName;
         teamHeader.classList.remove("hidden");
         $("loginOpen").classList.add("hidden");
       }
