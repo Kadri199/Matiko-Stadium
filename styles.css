@@ -97,3 +97,26 @@
 
 /* Responsive YouTube videos in homepage news cards. */
 .news-video{display:block;width:100%;aspect-ratio:16/9;border:0;background:#071b13}
+
+
+/* Two clear navigation rows: core stadium links, then games and latest news. */
+.site-header{height:auto;min-height:78px}
+.nav-wrap{min-height:78px;height:auto}
+.site-header nav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.site-header nav .nav-line{display:flex;align-items:center;justify-content:center;gap:22px;white-space:nowrap}
+.site-header nav .nav-line-primary{font-size:12px}
+.site-header nav .nav-line-secondary{font-size:12px;font-weight:900}
+.site-header nav .nav-line-secondary a{color:var(--lime);padding:1px 10px;border-radius:20px;background:#ffffff12}
+.site-header nav .nav-line a{transition:color .2s,background .2s}
+@media(max-width:760px){
+  .site-header{min-height:68px}
+  .nav-wrap{min-height:68px}
+  .site-header nav{display:none;position:absolute;top:68px;right:0;left:0;background:var(--forest);padding:12px 15px 17px;flex-direction:column;align-items:stretch;gap:9px;box-shadow:0 12px 20px #001d1530}
+  .site-header nav.open{display:flex}
+  .site-header nav .nav-line{width:100%;display:flex;align-items:center;justify-content:flex-start;gap:18px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;padding:3px 7px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .site-header nav .nav-line::-webkit-scrollbar{display:none}
+  .site-header nav .nav-line-primary{border-bottom:1px solid #ffffff20;padding-bottom:9px}
+  .site-header nav .nav-line-secondary{padding-top:2px}
+  .site-header nav .nav-line a{flex:0 0 auto;padding:6px 3px}
+  .site-header nav .nav-line-secondary a{padding:5px 13px}
+}
