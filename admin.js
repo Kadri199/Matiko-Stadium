@@ -86,7 +86,7 @@ let adminTeamProfiles=[];
 function sortedTeamNames(){return [...new Set(adminTeamProfiles.map(x=>String(x.fullName||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar"));}
 function fillAdminTeamSelect(select){if(!select)return;select.innerHTML="";const other=document.createElement("option");other.value="__other__";other.textContent="فريق آخر";select.appendChild(other);sortedTeamNames().forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;select.appendChild(option);});toggleAdminOther(select);}
 function toggleAdminOther(select){const input=$(select.id+"Other"),wrap=$(select.id+"OtherWrap");if(!input)return;const custom=select.value==="__other__";wrap?.classList.toggle("hidden",!custom);input.required=custom;if(!custom)input.value="";}
-function setupAdminTeamSelects(){["adminBookTeam1","adminBookTeam2"].forEach(id=>{const select=$(id);fillAdminTeamSelect(select);select.addEventListener("change",()=>toggleAdminOther(select));});}
+function setupAdminTeamSelects(){["adminBookTeam1","adminBookTeam2"].forEach(id=>{const select=$(id);fillAdminTeamSelect(select);select.onchange=()=>toggleAdminOther(select);});}
 async function syncPublicTeamDirectory(){const users=await getDocs(collection(db,"users"));const teams=users.docs.filter(d=>d.data().role==="team"&&String(d.data().fullName||"").trim());adminTeamProfiles=teams.map(d=>({uid:d.id,fullName:d.data().fullName}));await Promise.all(teams.map(d=>setDoc(doc(db,"teamDirectory",d.id),{fullName:String(d.data().fullName).trim(),updatedAt:serverTimestamp()},{merge:true})));setupAdminTeamSelects();}
 function setResultTimeOptions(times, selected="") {
   const select=$("resultTime");
@@ -345,9 +345,13 @@ async function loadAll(){
       $("scheduleTimes").value=configuredTimes.join("\n");
       $("scheduleEnabled").checked=sched.data().enabled!==false;
       setResultTimeOptions(configuredTimes);
+      const bookingTime=$("adminBookTime");
+      if(bookingTime){bookingTime.innerHTML="";configuredTimes.forEach(time=>{const option=document.createElement("option");option.value=time;option.textContent=time;bookingTime.appendChild(option);});}
     }else {
       $("scheduleTimes").value=timesDefault.join("\n");
       setResultTimeOptions(timesDefault);
+      const bookingTime=$("adminBookTime");
+      if(bookingTime){bookingTime.innerHTML="";timesDefault.forEach(time=>{const option=document.createElement("option");option.value=time;option.textContent=time;bookingTime.appendChild(option);});}
     }
     const about=await getDoc(doc(db,"settings","about"));
     if(about.exists()){
