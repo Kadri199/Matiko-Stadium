@@ -490,13 +490,31 @@ onSnapshot(doc(db, "settings", "about"), snapshot => {
   if (description && data.description) description.textContent = data.description;
   if (contact) {
     contact.replaceChildren();
-    [["📍", data.location], ["☎", data.phone]].forEach(([icon, value]) => {
-      if (!value || !String(value).trim()) return;
-      const item = document.createElement("span");
-      item.className = "about-contact-item";
-      item.textContent = icon + " " + String(value).trim();
-      contact.appendChild(item);
-    });
+    if (data.location && String(data.location).trim()) {
+      const locationItem = document.createElement("span");
+      locationItem.className = "about-contact-item";
+      locationItem.textContent = "📍 " + String(data.location).trim();
+      contact.appendChild(locationItem);
+    }
+    if (data.phone && String(data.phone).trim()) {
+      const phoneItem = document.createElement("a");
+      phoneItem.className = "about-contact-item";
+      phoneItem.href = "tel:" + String(data.phone).trim().replace(/[^+\\d]/g, "");
+      phoneItem.textContent = "📞 " + String(data.phone).trim();
+      phoneItem.setAttribute("aria-label", "اتصل بالملعب هاتفياً");
+      contact.appendChild(phoneItem);
+    }
+    if (data.facebookGroup && String(data.facebookGroup).trim()) {
+      const facebookItem = document.createElement("a");
+      facebookItem.className = "about-contact-item";
+      let groupUrl = String(data.facebookGroup).trim();
+      if (!/^https?:\\/\\//i.test(groupUrl)) groupUrl = "https://" + groupUrl;
+      facebookItem.href = groupUrl;
+      facebookItem.target = "_blank";
+      facebookItem.rel = "noopener noreferrer";
+      facebookItem.textContent = "ⓕ مجموعة الملعب على Facebook";
+      contact.appendChild(facebookItem);
+    }
     contact.classList.toggle("hidden", !contact.children.length);
   }
 }, error => {
