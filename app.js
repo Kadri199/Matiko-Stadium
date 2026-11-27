@@ -177,7 +177,10 @@ function renderHomepageNews(snapshot) {
   items.forEach(item => {
     const card = document.createElement("article");
     card.className = "news-card";
-    if (item.imageUrl) {
+    if (item.videoUrl) {
+      const videoId = (() => { try { const url=new URL(item.videoUrl); if(url.hostname.includes("youtu.be"))return url.pathname.split("/").filter(Boolean)[0]||""; return url.searchParams.get("v") || url.pathname.split("/").filter(Boolean).slice(-1)[0] || ""; } catch (_) { return ""; } })();
+      if(videoId){const frame=document.createElement("iframe");frame.className="news-video";frame.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(videoId);frame.title=item.title||"فيديو من الملعب";frame.loading="lazy";frame.allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";frame.referrerPolicy="strict-origin-when-cross-origin";frame.allowFullscreen=true;card.appendChild(frame);}
+    } else if (item.imageUrl) {
       const img = document.createElement("img");
       img.className = "news-image";
       img.src = item.imageUrl;
