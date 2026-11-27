@@ -29,6 +29,21 @@ daySelect.addEventListener("change", () => {
 });
 let approvedMatches = new Map();
 const bookingSyncStatus = $("bookingSyncStatus");
+let registeredTeamProfiles=[];
+function sortTeamNames(values){return [...new Set(values.map(x=>String(x||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar"));}
+function populateOpponentOptions(){
+  const select=$("teamTwo");if(!select)return;
+  const previous=select.value;
+  select.innerHTML="";
+  const other=document.createElement("option");other.value="__other__";other.textContent="فريق آخر";select.appendChild(other);
+  sortTeamNames(registeredTeamProfiles.map(x=>x.fullName)).forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;select.appendChild(option);});
+  if(previous&&[...select.options].some(x=>x.value===previous))select.value=previous;
+  toggleOtherTeamInput();
+}
+function toggleOtherTeamInput(){const select=$("teamTwo"),input=$("teamTwoOther"),wrap=$("teamTwoOtherWrap");if(!select||!input)return;const custom=select.value==="__other__";wrap?.classList.toggle("hidden",!custom);input.required=custom;if(!custom)input.value="";}
+$("teamTwo").addEventListener("change",toggleOtherTeamInput);
+onSnapshot(collection(db,"teamDirectory"),snapshot=>{registeredTeamProfiles=snapshot.docs.map(d=>d.data()).filter(d=>d.fullName);populateOpponentOptions();},error=>console.error("Could not load team directory:",error));
+
 function setBookingSyncStatus(message, isError=false){ if(bookingSyncStatus){ bookingSyncStatus.textContent=message; bookingSyncStatus.classList.toggle("sync-error",isError); } }
 function normalizeMatchKey(day, time){
   const normalizeArabic = value => String(value||"")
@@ -597,6 +612,10 @@ $("authForm").addEventListener("submit", async e => {
           role: "team",
           createdAt: serverTimestamp()
         });
+        await setDoc(doc(db, "teamDirectory", credential.user.uid), {
+          fullName,
+          updatedAt: serverTimestamp()
+        });
       } catch (profileError) {
         await signOut(auth);
         throw new Error("تم إنشاء حساب الدخول، لكن تعذر إنشاء ملف الفريق في قاعدة البيانات: " + profileError.message);
@@ -661,14 +680,14 @@ $("requestForm").addEventListener("submit", async e => {
     if(!profileSnap.exists() || profileSnap.data().role!=="team") throw new Error("يجب تسجيل الدخول بحساب فريق صالح.");
     const teamName=profileSnap.data().fullName || $("teamOne").value.trim();
     $("teamOne").value=teamName;
-    const opponent=$("teamTwo").value.trim();
+    const opponent=$("teamTwo").value==="__other__"?$("teamTwoOther").value.trim():$("teamTwo").value.trim();
     if(!opponent) throw new Error("يرجى إدخال اسم الفريق المنافس.");
     await addDoc(collection(db,"bookings"),{
       teamUid:currentUser.uid,teamEmail:currentUser.email||"",teamName,
       opponentName:opponent,day:selectedDay,time:selectedSlot,
       note:$("requestNote").value.trim(),status:"pending",createdAt:serverTimestamp()
     });
-    e.target.reset();
+    e.target.reset();populateOpponentOptions();
     showMessage("requestMessage","تم إرسال طلب الحجز بنجاح. يبقى الطلب قيد الانتظار حتى موافقة إدارة الملعب.",false);
   } catch(err) { showMessage("requestMessage","تعذر إرسال الطلب: "+err.message); }
   finally { if(submit){submit.disabled=false;submit.textContent="إرسال الطلب";} }
