@@ -15,3 +15,10 @@
 
 /* Only rejection uses the red car-indicator flash; approval has no glow. */50%{opacity:.42;box-shadow:0 0 0 1px #dc262622,0 0 3px 1px #ef444433}
 }
+
+
+/* Small owner-only delete bin at the top-left of each booking card. */
+.booking-record{position:relative;padding-left:48px}
+.booking-delete-btn{position:absolute;left:10px;top:10px;width:28px;height:28px;padding:0;display:grid;place-items:center;border:1px solid #f0d4d0;border-radius:8px;background:#fff7f5;color:#a34d43;font-size:14px;line-height:1;cursor:pointer}
+.booking-delete-btn:hover{background:#fee9e6;border-color:#e9b8b1}
+.booking-delete-btn:disabled{opacity:.55;cursor:wait}
