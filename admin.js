@@ -401,6 +401,11 @@ function parseNewsVideoUrl(value){
       if(!match)throw new Error("رابط TikTok غير صالح.");
       return {type:"tiktok",url:"https://www.tiktok.com/@video/video/"+match[1],id:match[1]};
     }
+    if(host==="instagram.com"){
+      const parts=url.pathname.split("/").filter(Boolean);
+      if(!["reel","reels","p","tv"].includes(parts[0])||!parts[1])throw new Error("يرجى لصق رابط Instagram Reel أو فيديو أو منشور صحيح.");
+      return {type:"instagram",url:"https://www.instagram.com/"+parts[0]+"/"+parts[1]+"/"};
+    }
   }catch(err){if(err instanceof TypeError)throw new Error("رابط الفيديو غير صالح.");throw err;}
   throw new Error("يدعم الموقع روابط YouTube وFacebook وTikTok فقط.");
 }
