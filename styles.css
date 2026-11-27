@@ -168,3 +168,18 @@
 .news-video-wrap.news-video-portrait{aspect-ratio:9/16!important;max-width:430px!important;margin-inline:auto!important}
 .news-video-wrap .news-video{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;min-height:0!important;border:0!important}
 @media(max-width:760px){.news-video-wrap.news-video-portrait{max-width:min(100%,390px)!important}}
+
+
+/* Homepage quick links: keep games and latest news together on their own row. */
+.hero-actions{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important;width:100%!important;max-width:820px!important}
+.hero-actions-primary,.hero-actions-secondary{display:flex!important;align-items:stretch!important;gap:10px!important;width:100%!important}
+.hero-actions-primary{justify-content:flex-start!important;flex-wrap:wrap!important}
+.hero-actions-secondary{justify-content:flex-start!important}
+.hero-actions-primary .btn,.hero-actions-secondary .btn{min-height:48px}
+.hero-actions-secondary .btn{border-color:#c8f169a8;color:var(--lime);background:#ffffff0b}
+@media(max-width:760px){
+ .hero-actions{gap:9px!important;margin-top:24px!important}
+ .hero-actions-primary{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}
+ .hero-actions-secondary{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+ .hero-actions-primary .btn,.hero-actions-secondary .btn{width:100%!important;min-width:0!important;min-height:46px!important;padding:8px 5px!important;font-size:clamp(10px,2.4vw,13px)!important;white-space:nowrap!important;border-radius:11px!important}
+}
