@@ -32,6 +32,9 @@ const bookingSyncStatus = $("bookingSyncStatus");
 let registeredTeamProfiles=[];
 function sortTeamNames(values){return [...new Set(values.map(x=>String(x||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar"));}
 function populateOpponentOptions(){const select=$("teamTwo");if(!select)return;const previous=select.value;select.innerHTML="";const other=document.createElement("option");other.value="__other__";other.textContent="فريق آخر";select.appendChild(other);sortTeamNames(registeredTeamProfiles.map(x=>x.fullName)).forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;select.appendChild(option);});if(previous&&[...select.options].some(x=>x.value===previous))select.value=previous;toggleOtherTeamInput();}
+function fillAdminMatchTeamSelect(id,placeholder){const select=$(id);if(!select)return;const previous=select.value;select.innerHTML="";const first=document.createElement("option");first.value="";first.textContent=placeholder;select.appendChild(first);sortTeamNames(registeredTeamProfiles.map(x=>x.fullName)).forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;select.appendChild(option);});if([...select.options].some(x=>x.value===previous))select.value=previous;}
+function populateAdminMatchTeamOptions(){fillAdminMatchTeamSelect("adminMatchTeam1","اختر الفريق الأول");fillAdminMatchTeamSelect("adminMatchTeam2","اختر الفريق الثاني");}
+function configureBookingModalForCurrentUser(){const owner=isOwnerAccount(currentUser);$("teamOneTeamWrap").classList.toggle("hidden",owner);$("teamTwoTeamWrap").classList.toggle("hidden",owner);$("teamTwoOtherWrap").classList.toggle("hidden",owner);$("teamOneAdminWrap").classList.toggle("hidden",!owner);$("teamTwoAdminWrap").classList.toggle("hidden",!owner);$("teamOne").required=!owner;$("teamTwo").required=!owner;$("adminMatchTeam1").required=owner;$("adminMatchTeam2").required=owner;$("requestSubmit").textContent=owner?"تأكيد الحجز مباشرة":"إرسال الطلب";if(owner)populateAdminMatchTeamOptions();}
 function toggleOtherTeamInput(){const select=$("teamTwo"),input=$("teamTwoOther"),wrap=$("teamTwoOtherWrap");if(!select||!input||!wrap)return;const custom=select.value==="__other__";wrap.classList.toggle("hidden",!custom);wrap.hidden=!custom;wrap.style.display=custom?"":"none";input.required=custom;input.disabled=!custom;if(!custom)input.value="";}
 $("teamTwo").addEventListener("change",toggleOtherTeamInput);
 onSnapshot(collection(db,"teamDirectory"),snapshot=>{registeredTeamProfiles=snapshot.docs.map(d=>d.data()).filter(d=>d.fullName);populateOpponentOptions();},error=>console.error("Could not load team directory:",error));
@@ -97,8 +100,9 @@ function renderSlots(){
       button.setAttribute("aria-label",match ? `مباراة ${match.teamName} ضد ${match.opponentName}` : "موعد محجوز");
     } else button.addEventListener("click", () => {
       selectedSlot = time;
-      $("requestTitle").textContent = "طلب حجز — " + selectedDay + " — " + time;
+      $("requestTitle").textContent = (isOwnerAccount(currentUser)?"حجز مباراة من الإدارة — ":"طلب حجز — ") + selectedDay + " — " + time;
       $("requestMessage").textContent = currentUser ? "" : "يرجى تسجيل الدخول أولاً لإرسال طلب الحجز.";
+      configureBookingModalForCurrentUser();
       $("requestBackdrop").classList.add("open");
     });
     slotsGrid.appendChild(button);
@@ -695,11 +699,18 @@ $("authForm").addEventListener("submit", async e => {
 $("requestForm").addEventListener("submit", async e => {
   e.preventDefault();
   const submit=e.submitter || e.target.querySelector('button[type="submit"],button:not([type])');
-  if (!currentUser) { showMessage("requestMessage", "يرجى تسجيل الدخول بحساب فريق أولاً."); return; }
-  if (isOwnerAccount(currentUser)) { showMessage("requestMessage", "طلبات الحجز متاحة لحسابات الفرق فقط."); return; }
+  if (!currentUser) { showMessage("requestMessage", "يرجى تسجيل الدخول أولاً."); return; }
   if (!selectedSlot) { showMessage("requestMessage", "يرجى اختيار الفترة الزمنية أولاً."); return; }
-  if (submit) { submit.disabled=true; submit.textContent="جارٍ إرسال الطلب..."; }
+  const owner=isOwnerAccount(currentUser);
+  if (submit) { submit.disabled=true; submit.textContent=owner?"جارٍ تأكيد الحجز...":"جارٍ إرسال الطلب..."; }
   try {
+    if(owner){
+      const team1=$("adminMatchTeam1").value.trim(),team2=$("adminMatchTeam2").value.trim();
+      if(!team1||!team2||team1===team2)throw new Error("اختر فريقين مختلفين من قائمة البروفايلات.");
+      if(approvedMatches.has(normalizeMatchKey(selectedDay,selectedSlot)))throw new Error("هذا الموعد محجوز بالفعل.");
+      await addDoc(collection(db,"bookings"),{teamUid:"admin",teamEmail:OWNER_EMAIL,teamName:team1,opponentName:team2,day:selectedDay,time:selectedSlot,note:$("requestNote").value.trim()||"حجز مباشر من إدارة الملعب",status:"approved",createdAt:serverTimestamp(),createdBy:"owner"});
+      e.target.reset();$("requestBackdrop").classList.remove("open");showMessage("requestMessage","تم تأكيد المباراة وحجز الموعد مباشرة.",false);return;
+    }
     const profileSnap=await getDoc(doc(db,"users",currentUser.uid));
     if(!profileSnap.exists() || profileSnap.data().role!=="team") throw new Error("يجب تسجيل الدخول بحساب فريق صالح.");
     const teamName=profileSnap.data().fullName || $("teamOne").value.trim();
@@ -727,6 +738,7 @@ $("teamLogout").addEventListener("click", async () => {
 
 onAuthStateChanged(auth, async user => {
   currentUser = user;
+  configureBookingModalForCurrentUser();
   $("teamOne").value = "";
   document.body.classList.toggle("owner-signed-in", isOwnerAccount(user));
   if (latestResultsSnapshot) renderHomepageResults(latestResultsSnapshot);
