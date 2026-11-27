@@ -286,6 +286,37 @@ async function loadCollection(name,target,type=name){
   renderRecords(target,docs,type);
   return docs.length;
 }
+let adminChallengesUnsubscribe=null;
+function renderAdminChallenges(snapshot){
+  const host=$("challengesAdminList");
+  if(!host)return;
+  const docs=snapshot.docs.slice().sort((a,b)=>(b.data().createdAt?.seconds||0)-(a.data().createdAt?.seconds||0));
+  host.innerHTML="";
+  if(!docs.length){host.innerHTML='<div class="empty-state">لا توجد تحديات حتى الآن.</div>';return;}
+  docs.forEach(item=>{
+    const d=item.data();
+    const card=document.createElement("article");card.className="record";
+    const content=document.createElement("div");
+    const title=document.createElement("h3");title.textContent=(d.teamName||"فريق")+" × "+(d.acceptedByName||"بانتظار فريق منافس");
+    const status=document.createElement("strong");status.textContent=d.status==="accepted"?"تم قبول التحدي":"تحدٍ مفتوح";
+    status.style.cssText="display:inline-block;margin:6px 0;padding:4px 10px;border-radius:999px;background:"+(d.status==="accepted"?"#dcfce7":"#fef3c7")+";color:"+(d.status==="accepted"?"#166534":"#92400e")+";font-size:12px";
+    const detail=document.createElement("p");detail.textContent="اليوم: "+(d.day||"—")+" | الساعة: "+(d.time||"—");
+    content.append(title,status,detail);
+    if(d.note){const note=document.createElement("p");note.textContent="ملاحظة: "+d.note;content.append(note);}
+    const actions=document.createElement("div");actions.className="record-actions";
+    const del=document.createElement("button");del.type="button";del.className="danger-btn";del.textContent="حذف التحدي";
+    del.addEventListener("click",async()=>{if(!confirm("هل تريد حذف هذا التحدي نهائياً؟"))return;del.disabled=true;try{await deleteDoc(doc(db,"challenges",item.id));}catch(error){alert("تعذر حذف التحدي: "+error.message);del.disabled=false;}});
+    actions.append(del);card.append(content,actions);host.append(card);
+  });
+}
+function watchAdminChallenges(){
+  if(adminChallengesUnsubscribe)return;
+  adminChallengesUnsubscribe=onSnapshot(collection(db,"challenges"),renderAdminChallenges,error=>{
+    console.error("Could not load admin challenges:",error);
+    const host=$("challengesAdminList");
+    if(host)host.innerHTML='<div class="empty-state">تعذر تحميل التحديات. تحقق من صلاحيات Firestore.</div>';
+  });
+}
 async function loadBookings(){
   const host=$("bookingsAdminList");
   const snap=await getDocs(collection(db,"bookings"));
@@ -335,6 +366,7 @@ async function loadAll(){
   try{
     await syncPublicTeamDirectory();
     watchPublicTeamDirectory();
+    watchAdminChallenges();
     const [users,results,news]=await Promise.all([
       loadCollection("users","usersAdminList","users"),
       loadCollection("results","resultsAdminList","results"),
