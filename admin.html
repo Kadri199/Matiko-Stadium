@@ -96,6 +96,7 @@
           <div class="page-heading"><div><h1>معلومات الملعب</h1><p>تحديث وصف الملعب ومعلومات التواصل.</p></div></div>
           <form id="aboutForm" class="form-card">
             <label>وصف الملعب<textarea id="aboutDescription" rows="5" required></textarea></label>
+            <label>رابط الموقع الجغرافي على Google Maps<input id="aboutGoogleMaps" type="url" inputmode="url" placeholder="https://maps.google.com/..."></label><small class="hint">انسخ رابط مشاركة الموقع من تطبيق Google Maps والصقه هنا. سيظهر الرابط مباشرة تحت وصف الملعب في الصفحة الرئيسية.</small>
             <div class="form-grid"><label>الموقع<input id="aboutLocation" placeholder="عنوان الملعب أو موقعه"></label><label>رقم الهاتف<input id="aboutPhone" type="tel" inputmode="tel" placeholder="مثال: 0550 00 00 00"></label></div><label>رابط مجموعة Facebook<input id="aboutFacebook" type="url" inputmode="url" placeholder="https://www.facebook.com/groups/..."></label><small class="hint">سيظهر رابط المجموعة في الصفحة الرئيسية، وعند الضغط عليه ينتقل الزائر مباشرة إلى مجموعة Facebook.</small>
             <button class="btn btn-primary">حفظ المعلومات</button><p class="message" id="aboutMessage"></p>
           </form>
