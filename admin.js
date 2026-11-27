@@ -81,6 +81,13 @@ function openScorersEditor(team1, team2, current1, current2) {
   });
 }
 const availableClubCrests = [["Real Madrid","https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg"],["Barcelona","https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg"],["Manchester United","https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg"],["Liverpool","https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg"],["Manchester City","https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg"],["Arsenal","https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg"],["Chelsea","https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg"],["Tottenham","https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg"],["Bayern Munich","https://upload.wikimedia.org/wikipedia/en/1/1f/FC_Bayern_München_logo_%282017%29.svg"],["Borussia Dortmund","https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg"],["Paris Saint-Germain","https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg"],["Juventus","https://upload.wikimedia.org/wikipedia/commons/1/15/Juventus_FC_2017_logo.svg"],["Inter Milan","https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg"],["AC Milan","https://upload.wikimedia.org/wikipedia/commons/d/d0/Logo_of_AC_Milan.svg"],["Atletico Madrid","https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg"],["Ajax","https://upload.wikimedia.org/wikipedia/en/7/79/Ajax_Amsterdam.svg"],["CS Constantine","https://assets.football-logos.cc/logos/algeria/256x256/cs-constantine.7736f860.png"],["MC Alger","https://assets.football-logos.cc/logos/algeria/256x256/mc-alger.07948633.png"],["CR Belouizdad","https://assets.football-logos.cc/logos/algeria/256x256/cr-belouizdad.c27becc8.png"],["ES Sétif","https://assets.football-logos.cc/logos/algeria/256x256/es-setif.9dbc0932.png"]];
+
+let adminTeamProfiles=[];
+function sortedTeamNames(){return [...new Set(adminTeamProfiles.map(x=>String(x.fullName||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"ar"));}
+function fillAdminTeamSelect(select){if(!select)return;select.innerHTML="";const other=document.createElement("option");other.value="__other__";other.textContent="فريق آخر";select.appendChild(other);sortedTeamNames().forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;select.appendChild(option);});toggleAdminOther(select);}
+function toggleAdminOther(select){const input=$(select.id+"Other"),wrap=$(select.id+"OtherWrap");if(!input)return;const custom=select.value==="__other__";wrap?.classList.toggle("hidden",!custom);input.required=custom;if(!custom)input.value="";}
+function setupAdminTeamSelects(){["adminBookTeam1","adminBookTeam2"].forEach(id=>{const select=$(id);fillAdminTeamSelect(select);select.addEventListener("change",()=>toggleAdminOther(select));});}
+async function syncPublicTeamDirectory(){const users=await getDocs(collection(db,"users"));const teams=users.docs.filter(d=>d.data().role==="team"&&String(d.data().fullName||"").trim());adminTeamProfiles=teams.map(d=>({uid:d.id,fullName:d.data().fullName}));await Promise.all(teams.map(d=>setDoc(doc(db,"teamDirectory",d.id),{fullName:String(d.data().fullName).trim(),updatedAt:serverTimestamp()},{merge:true})));setupAdminTeamSelects();}
 function setResultTimeOptions(times, selected="") {
   const select=$("resultTime");
   if(!select)return;
@@ -324,6 +331,7 @@ async function loadBookings(){
 async function loadAll(){
   if(!ownerReady)return;
   try{
+    await syncPublicTeamDirectory();
     const [users,results,news]=await Promise.all([
       loadCollection("users","usersAdminList","users"),
       loadCollection("results","resultsAdminList","results"),
@@ -356,6 +364,20 @@ function activateAdminPanel(name){
 }
 document.querySelectorAll(".nav-item").forEach(btn=>btn.addEventListener("click",()=>activateAdminPanel(btn.dataset.panel)));
 $("logoutBtn").addEventListener("click",async()=>{await signOut(auth);location.href="index.html";});
+
+$("adminBookingForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!ownerReady)return;
+ const team1=$("adminBookTeam1").value==="__other__"?$("adminBookTeam1Other").value.trim():$("adminBookTeam1").value;
+ const team2=$("adminBookTeam2").value==="__other__"?$("adminBookTeam2Other").value.trim():$("adminBookTeam2").value;
+ const day=$("adminBookDay").value,time=$("adminBookTime").value;
+ if(!team1||!team2||team1===team2){message("adminBookingMessage","يرجى اختيار فريقين مختلفين أو إدخال اسميهما.",true);return;}
+ try{
+  const all=await getDocs(collection(db,"bookings"));
+  if(all.docs.some(d=>normalizeBookingValue(d.data().day)===normalizeBookingValue(day)&&normalizeBookingValue(d.data().time)===normalizeBookingValue(time)&&d.data().status==="approved"))throw new Error("هذا الموعد محجوز بالفعل.");
+  await addDoc(collection(db,"bookings"),{teamUid:"admin",teamEmail:OWNER_EMAIL,teamName:team1,opponentName:team2,day,time,note:"حجز مباشر من إدارة الملعب",status:"approved",createdAt:serverTimestamp(),createdBy:"owner"});
+  e.target.reset();setupAdminTeamSelects();message("adminBookingMessage","تم حجز الموعد بنجاح، وسيظهر باللون الأحمر في الرئيسية.");await loadBookings();
+ }catch(err){message("adminBookingMessage",err.message,true);}
+});
 $("scheduleForm").addEventListener("submit",async e=>{
   e.preventDefault();if(!ownerReady)return;
   try{
