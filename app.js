@@ -604,7 +604,6 @@ $("authForm").addEventListener("submit", async e => {
           role: "team",
           createdAt: serverTimestamp()
         });
-        await setDoc(doc(db, "teamDirectory", credential.user.uid), {fullName,updatedAt:serverTimestamp()});
         await setDoc(doc(db, "teamDirectory", credential.user.uid), {
           fullName,
           updatedAt: serverTimestamp()
