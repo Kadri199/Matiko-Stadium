@@ -50,7 +50,7 @@ function showApprovedMatch(match){
     matchInfoBackdrop=document.createElement("div");
     matchInfoBackdrop.className="modal-backdrop";
     matchInfoBackdrop.id="approvedMatchBackdrop";
-    matchInfoBackdrop.innerHTML='<section class="modal match-info-modal" role="dialog" aria-modal="true" aria-label="تفاصيل المباراة"><button type="button" class="modal-close" aria-label="إغلاق">×</button><div class="match-team match-team-home"></div><div class="match-vs">VS</div><div class="match-team match-team-away"></div><p class="match-info-time"></p></section>';
+    matchInfoBackdrop.innerHTML='<section class="modal match-info-modal" role="dialog" aria-modal="true" aria-label="تفاصيل المباراة"><button type="button" class="modal-close" aria-label="إغلاق">×</button><div class="match-team match-team-home"></div><div class="match-vs">VS</div><div class="match-team match-team-away"></div><p class="match-info-time"></p><button type="button" class="btn btn-primary admin-add-result hidden">إدراج النتيجة والهدافين</button></section>';
     document.body.appendChild(matchInfoBackdrop);
     matchInfoBackdrop.querySelector(".modal-close").addEventListener("click",()=>matchInfoBackdrop.classList.remove("open"));
     matchInfoBackdrop.addEventListener("click",e=>{if(e.target===matchInfoBackdrop)matchInfoBackdrop.classList.remove("open");});
@@ -58,6 +58,13 @@ function showApprovedMatch(match){
   matchInfoBackdrop.querySelector(".match-team-home").textContent=match.teamName||"الفريق الأول";
   matchInfoBackdrop.querySelector(".match-team-away").textContent=match.opponentName||"الفريق الثاني";
   matchInfoBackdrop.querySelector(".match-info-time").textContent=(match.day||"")+" — "+(match.time||"");
+  const adminResultButton=matchInfoBackdrop.querySelector(".admin-add-result");
+  adminResultButton.classList.toggle("hidden",!isOwnerAccount(currentUser));
+  adminResultButton.onclick=()=>{
+    if(!isOwnerAccount(currentUser))return;
+    const params=new URLSearchParams({panel:"results",bookingResult:"1",team1:match.teamName||"",team2:match.opponentName||"",day:match.day||"",time:match.time||""});
+    location.href="admin.html?"+params.toString();
+  };
   matchInfoBackdrop.classList.add("open");
 }
 let authMode = "login";
