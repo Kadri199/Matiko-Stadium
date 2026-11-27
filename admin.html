@@ -50,10 +50,8 @@
           <form id="adminBookingForm" class="form-card" style="margin-top:18px">
             <h2>حجز موعد من الإدارة</h2><p class="hint">اختر الفريقين والموعد، وسيظهر الحجز مؤكداً مباشرة في الرئيسية.</p>
             <div class="form-grid">
-              <label>الفريق الأول<select id="adminBookTeam1" required><option value="__other__">فريق آخر</option></select></label>
-              <label id="adminBookTeam1OtherWrap" class="hidden">اسم الفريق الأول<input id="adminBookTeam1Other" placeholder="اكتب اسم الفريق"></label>
-              <label>الفريق الثاني<select id="adminBookTeam2" required><option value="__other__">فريق آخر</option></select></label>
-              <label id="adminBookTeam2OtherWrap" class="hidden">اسم الفريق الثاني<input id="adminBookTeam2Other" placeholder="اكتب اسم الفريق"></label>
+              <label>الفريق الأول<select id="adminBookTeam1" required><option value="">اختر الفريق الأول</option></select></label>
+              <label>الفريق الثاني<select id="adminBookTeam2" required><option value="">اختر الفريق الثاني</option></select></label>
               <label>اليوم<select id="adminBookDay" required><option>الأحد</option><option>الإثنين</option><option>الثلاثاء</option><option>الأربعاء</option><option>الخميس</option><option>الجمعة</option><option>السبت</option></select></label>
               <label>الساعة<select id="adminBookTime" required><option>16:00 – 17:00</option><option>17:00 – 18:00</option><option>18:00 – 19:00</option><option>19:00 – 20:00</option><option>20:00 – 21:00</option><option>21:00 – 22:00</option></select></label>
             </div><button class="btn btn-primary">تأكيد الحجز</button><p class="message" id="adminBookingMessage"></p>
