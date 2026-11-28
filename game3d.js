@@ -2,6 +2,12 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 import { db } from "./firebase.js";
 import { addDoc, collection, limit, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 const game=document.body.dataset.game,isPenalty=game==="penalty",$=id=>document.getElementById(id);
+// Keep one in-page history entry so the Android phone back button returns
+// to the stadium home page instead of closing the app from this game screen.
+if(isPenalty){
+  history.pushState({penaltyGame:true},"",location.href);
+  window.addEventListener("popstate",()=>location.replace("index.html#games"));
+}
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x8ab6d0);scene.fog=new THREE.Fog(0x8ab6d0,35,100);
 const camera=new THREE.PerspectiveCamera(53,1,.1,150);camera.position.set(0,1.55,8.5);camera.lookAt(0,1.3,-15);
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;$("game3d").appendChild(renderer.domElement);
