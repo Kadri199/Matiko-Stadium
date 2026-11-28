@@ -81,7 +81,25 @@ function land(f){state.shots++;$("score").textContent=state.score;$("attempts").
 function projectedBall(){const v=ball.position.clone().project(camera),r=renderer.domElement.getBoundingClientRect();return{x:r.left+(v.x+1)*r.width/2,y:r.top+(-v.y+1)*r.height/2}}
 function shotFromGesture(dx,dy){const rect=renderer.domElement.getBoundingClientRect(),x=THREE.MathUtils.clamp(dx/rect.width*10,-4.7,4.7),y=THREE.MathUtils.clamp(.3+(-dy/rect.height)*4.6,.25,2.85),power=THREE.MathUtils.clamp(Math.hypot(dx,dy)/Math.min(rect.width,rect.height)*2.5,.35,1);return{x,y,power}}
 function updateAim(dx,dy){placeAim(dx,dy)}
-function shoot(target){if(state.flight||state.gameOver)return;const x=target.x,y=target.y,p=target.power,inside=Math.abs(x)<gw/2&&y<gh;const dives=[{x:-3.15,y:-.08},{x:0,y:-.08},{x:3.15,y:-.08},{x:-3.15,y:.65},{x:0,y:.65},{x:3.15,y:.65},{x:-3.15,y:1.15},{x:0,y:1.15},{x:3.15,y:1.15}];const choice=dives[Math.floor(Math.random()*dives.length)];const keeperTarget={x:choice.x,y:choice.y};const keeperReach=Math.abs(keeperTarget.x-x)<1.1&&Math.abs((1.5+keeperTarget.y)-y)<1.15;const saved=isPenalty&&inside&&keeperReach;const goal=inside&&!saved;if(goal)state.score++;$("shoot")?.setAttribute("disabled","disabled");$("feedback").textContent="الكرة في طريقها إلى المرمى...";$("feedback").className="feedback";hideAim();state.flight={t:0,from:ball.position.clone(),to:new THREE.Vector3(x,Math.max(.22,y),gz),arc:1.1+p*1.1,goal,saved,keeperTarget,diveSign:choice.x>=0?-1:1};}
+function shoot(target){if(state.flight||state.gameOver)return;const x=target.x,y=target.y,p=target.power,inside=Math.abs(x)<gw/2&&y<gh;const dives=[{x:-3.15,y:-.08},{x:0,y:-.08},{x:3.15,y:-.08},{x:-3.15,y:.65},{x:0,y:.65},{x:3.15,y:.65},{x:-3.15,y:1.15},{x:0,y:1.15},{x:3.15,y:1.15}];const choice=dives[Math.floor(Math.random()*dives.length)];const keeperTarget={x:choice.x,y:choice.y};// Count a save when the ball hits any part of the keeper: head, body, arms,
+ // either leg, or the open space between the legs (not just the yellow jersey).
+ function distanceToSegment(px,py,ax,ay,bx,by){
+   const dx=bx-ax,dy=by-ay,len=dx*dx+dy*dy;
+   const t=len?THREE.MathUtils.clamp(((px-ax)*dx+(py-ay)*dy)/len,0,1):0;
+   return Math.hypot(px-(ax+t*dx),py-(ay+t*dy));
+ }
+ function hitsKeeper(px,py,target){
+   const scale=1.12,rx=px-target.x,ry=py-target.y;
+   const near=(cx,cy,r)=>Math.hypot(rx-cx*scale,ry-cy*scale)<=r*scale+.22;
+   const segment=(ax,ay,bx,by,r)=>distanceToSegment(rx,ry,ax*scale,ay*scale,bx*scale,by*scale)<=r*scale+.22;
+   const body=near(0,1.38,.39)||near(0,2.05,.22);
+   const arms=segment(-.3,1.62,-.48,1.12,.105)||segment(.3,1.62,.48,1.12,.105);
+   const legs=segment(-.17,1.05,-.2,.12,.13)||segment(.17,1.05,.2,.12,.13);
+   // The keeper's legs form a narrow central blocking area as well.
+   const betweenLegs=Math.abs(rx)<.18*scale+.22&&ry>=.08*scale-.22&&ry<=.95*scale+.22;
+   return body||arms||legs||betweenLegs;
+ }
+ const keeperReach=hitsKeeper(x,y,keeperTarget);const saved=isPenalty&&inside&&keeperReach;const goal=inside&&!saved;if(goal)state.score++;$("shoot")?.setAttribute("disabled","disabled");$("feedback").textContent="الكرة في طريقها إلى المرمى...";$("feedback").className="feedback";hideAim();state.flight={t:0,from:ball.position.clone(),to:new THREE.Vector3(x,Math.max(.22,y),gz),arc:1.1+p*1.1,goal,saved,keeperTarget,diveSign:choice.x>=0?-1:1};}
 const canvas=renderer.domElement;
 canvas.addEventListener("pointerdown",e=>{if(state.gameOver||state.flight||state.drag)return;const p=projectedBall();if(Math.hypot(e.clientX-p.x,e.clientY-p.y)>95)return;e.preventDefault();canvas.setPointerCapture(e.pointerId);state.drag={id:e.pointerId,x:e.clientX,y:e.clientY};$("feedback").textContent="اسحب إصبعك نحو المكان الذي تريد التسديد إليه...";$("feedback").className="feedback";});
 canvas.addEventListener("pointermove",e=>{if(!state.drag||state.drag.id!==e.pointerId)return;const dx=e.clientX-state.drag.x,dy=e.clientY-state.drag.y;updateAim(dx,dy)});
