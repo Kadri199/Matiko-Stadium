@@ -2,3 +2,7 @@
 .game3d-register.is-open{display:grid;position:fixed;inset:0;z-index:10000;align-content:center;justify-items:stretch;width:min(92vw,420px);height:max-content;max-height:85vh;overflow:auto;margin:auto;padding:22px;background:#092d2b;border:2px solid #d5f59a;border-radius:20px;box-shadow:0 0 0 100vmax #000b,0 22px 70px #0009}.game3d-register.is-open h2{margin:0;text-align:center;color:#d5f59a}.game3d-register.is-open button:disabled{opacity:.7}
 /* Keep the penalty name form completely hidden until the goalkeeper catches the ball. */
 .game3d-register.hidden{display:none!important}
+
+/* Optional exit from the penalty game's score-registration dialog */
+.game3d-register .register-back{display:flex;align-items:center;justify-content:center;min-height:44px;padding:11px 18px;border-radius:12px;background:#e7edf1;color:#173346;text-decoration:none;text-align:center;font:900 14px Cairo,sans-serif}
+.game3d-register.is-open .register-back:focus-visible{outline:3px solid #d5f59a;outline-offset:3px}
